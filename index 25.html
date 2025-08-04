@@ -1,0 +1,2965 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Калькулятор металлоизделий</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #f6f8fa;
+            margin: 0;
+            color: #223142;
+        }
+        header {
+            background: #223142;
+            color: #fff;
+            padding: 24px 0 12px 0;
+            text-align: center;
+            font-size: 2rem;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+        nav {
+            background: #1a2732;
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.5rem 0;
+        }
+        .tab {
+            color: #fff;
+            background: none;
+            border: none;
+            padding: 0.7rem 1.5rem;
+            font-size: 1rem;
+            cursor: pointer;
+            border-radius: 6px 6px 0 0;
+            transition: background 0.2s, color 0.2s;
+        }
+        .tab.active, .tab:hover {
+            background: #1ec3ff;
+            color: #fff;
+            font-weight: bold;
+        }
+        .tab-content {
+            display: none;
+            background: #fff;
+            padding: 1.5rem;
+            border-radius: 0 0 8px 8px;
+            margin: 0 auto;
+            max-width: 900px;
+            box-shadow: 0 2px 8px rgba(34,49,66,0.07);
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .accordion-btn {
+            width: 100%;
+            text-align: left;
+            background: #e9eef3;
+            border: none;
+            outline: none;
+            padding: 0.8rem 1rem;
+            font-size: 1.1rem;
+            cursor: pointer;
+            border-radius: 5px;
+            margin-bottom: 0.3rem;
+            transition: background 0.2s, color 0.2s;
+        }
+        .accordion-btn.active, .accordion-btn:hover {
+            background: #1ec3ff;
+            color: #fff;
+        }
+        .accordion-content {
+            display: none;
+            padding: 0.7rem 1.5rem;
+            background: #f6f8fa;
+            border-radius: 0 0 5px 5px;
+            margin-bottom: 0.5rem;
+        }
+        .accordion-content.active {
+            display: block;
+        }
+        .input-form, .grid-form, .two-cols-form {
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 1px 4px rgba(34,49,66,0.06);
+            font-size: 1rem;
+            width: 100%;
+        }
+        .input-form label, .grid-form label, .two-cols-form label {
+            color: #223142;
+        }
+        .input-form input, .input-form select, .grid-form input, .grid-form select, .two-cols-form input, .two-cols-form select {
+            border: 1px solid #c2c9d6;
+            border-radius: 4px;
+            font-size: 1rem;
+            padding: 0.3rem 0.4rem;
+            margin-top: 0.2rem;
+            background: #f6f8fa;
+            color: #223142;
+        }
+        .input-form button, .grid-form button, .two-cols-form button {
+            margin-top: 1rem;
+            background: #1ec3ff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            padding: 0.7rem 1.5rem;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .input-form button:hover, .grid-form button:hover, .two-cols-form button:hover {
+            background: #009fd6;
+        }
+        .extra-info {
+            margin-top: 1rem;
+            font-size: 0.98rem;
+            color: #223142;
+            background: #e9eef3;
+            border-radius: 6px;
+            padding: 0.7rem 0.5rem;
+        }
+        .checkbox-row-center label.custom-checkbox .checkmark {
+            border: 1.5px solid #1ec3ff;
+        }
+        .custom-checkbox input[type="checkbox"]:checked + .checkmark::after {
+            border-color: #1ec3ff;
+        }
+        .accordion {
+            margin-bottom: 1rem;
+        }
+        .calc-table th {
+            background: #223142 !important;
+            color: #fff !important;
+        }
+        .calc-table td {
+            color: #223142;
+        }
+        .calc-table tr:nth-child(even) td {
+            background: #f6f8fa;
+        }
+        /* Заглушка */
+        .stub {
+            color: #888;
+            font-style: italic;
+            padding: 2rem 0;
+            text-align: center;
+        }
+        .flex-row {
+            display: flex;
+            flex-direction: row;
+            gap: 2.5rem;
+            align-items: flex-start;
+            flex-wrap: nowrap;
+            width: 100%;
+            max-width: 1000px;
+            /* border: 2px dashed #e0e0e0; */ /* Убрано для отладки */
+            margin: 0 auto;
+        }
+        @media (max-width: 1100px) {
+            .flex-row {
+                flex-direction: column;
+                gap: 1.2rem;
+                max-width: 100%;
+            }
+            #val-form {
+                margin-left: 0 !important;
+            }
+        }
+        #val-form {
+            min-width: 340px;
+            max-width: 420px;
+            width: 100%;
+            margin-left: 32px;
+        }
+        .compact-flex {
+            align-items: flex-start;
+            gap: 1.2rem;
+        }
+        .compact-form {
+            max-width: 420px;
+            min-width: 320px;
+            width: 100%;
+            padding: 1rem 1.2rem;
+        }
+        .sketch-block {
+            min-width: 200px;
+            text-align: center;
+        }
+        .horizontal-form .form-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.2rem;
+            margin-bottom: 1.2rem;
+            overflow-x: unset;
+        }
+        .horizontal-form .form-row label, .horizontal-form .form-row .checkbox-row {
+            min-width: 140px;
+            flex: 1 1 140px;
+            margin-bottom: 0;
+        }
+        .horizontal-form .second-row {
+            align-items: flex-end;
+        }
+        .horizontal-form .end-row {
+            justify-content: flex-end;
+            display: flex;
+            gap: 1.2rem;
+            min-width: 180px;
+            flex: 1 1 180px;
+        }
+        .horizontal-form .form-row input,
+        .horizontal-form .form-row select {
+            font-size: 0.98rem;
+            padding: 0.2rem 0.3rem;
+        }
+        @media (max-width: 1100px) {
+            .horizontal-form .form-row {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+        }
+        .input-form label {
+            display: block;
+            margin-bottom: 0.7rem;
+        }
+        .input-form input, .input-form select {
+            width: 100%;
+            padding: 0.3rem 0.4rem;
+            margin-top: 0.2rem;
+            border-radius: 4px;
+            border: 1px solid #c2c9d6;
+            font-size: 1rem;
+        }
+        .input-form button {
+            margin-top: 1rem;
+            background: #223142;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            padding: 0.7rem 1.5rem;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .input-form button:hover {
+            background: #1a2732;
+        }
+        .uzk-group {
+            margin-top: 0.5rem;
+        }
+        .checkbox-row {
+            display: flex;
+            gap: 1.2rem;
+            align-items: center;
+        }
+        .checkbox-item {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            min-width: 120px;
+        }
+        .checkbox-item label {
+            display: flex;
+            align-items: center;
+            gap: 0.3em;
+            margin-bottom: 0;
+            font-weight: normal;
+        }
+        .two-cols-form {
+            width: 100%;
+            background: #f6f8fa;
+            border-radius: 8px;
+            padding: 1.2rem 1.5rem;
+            box-shadow: 0 1px 4px rgba(34,49,66,0.06);
+            font-size: 1rem;
+        }
+        .two-cols-row {
+            display: flex;
+            flex-direction: row;
+            gap: 0.7rem;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        .two-cols-row label {
+            flex: 1 1 150px;
+            min-width: 110px;
+            margin-bottom: 0;
+            white-space: nowrap;
+        }
+        .two-cols-row .checkbox-row {
+            display: flex;
+            gap: 1.2rem;
+            align-items: center;
+            min-width: 180px;
+            margin-bottom: 0;
+        }
+        .two-cols-row button {
+            padding: 0.7rem 1.5rem;
+            background: #223142;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .two-cols-row button:hover {
+            background: #1a2732;
+        }
+        @media (max-width: 900px) {
+            .two-cols-row {
+                flex-direction: column;
+                gap: 0.5rem;
+                align-items: stretch;
+            }
+        }
+        .two-cols-row input, .two-cols-row select {
+            font-size: 0.97rem;
+            padding: 0.18rem 0.3rem;
+            width: 150px;
+            box-sizing: border-box;
+        }
+        .checkbox-col {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        .checkbox-row-wrap {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        .uzk-wrap {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.1em;
+        }
+        .uzk-group {
+            margin-top: 0.4em;
+            width: 100%;
+        }
+        .grid-form {
+            max-width: 440px;
+            min-width: 320px;
+            width: 100%;
+            padding: 1rem 1.2rem;
+        }
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.1rem 1.2rem;
+            margin-bottom: 1.2rem;
+        }
+        .form-grid label, .form-grid .checkbox-cell {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.2em;
+        }
+        .form-grid .checkbox-row {
+            display: flex;
+            gap: 1.2rem;
+            align-items: center;
+        }
+        .form-grid .checkbox-item {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            min-width: 120px;
+        }
+        .form-grid .checkbox-item label {
+            display: flex;
+            align-items: center;
+            gap: 0.3em;
+            margin-bottom: 0;
+            font-weight: normal;
+        }
+        .form-grid .uzk-group {
+            margin-top: 0.4em;
+            width: 100%;
+        }
+        .form-grid-btn {
+            display: flex;
+            justify-content: center;
+        }
+        .form-grid input,
+        .form-grid select {
+            width: 150px;
+            box-sizing: border-box;
+        }
+        .form-grid.form-grid-fullwidth {
+            grid-column: 1 / -1;
+            margin-top: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+        .form-grid.form-grid-fullwidth.align-left {
+            justify-content: flex-start;
+        }
+        .checkbox-row.align-left {
+            justify-content: flex-start;
+        }
+        .checkbox-row-grid {
+            display: flex;
+            flex-direction: row;
+            gap: 0;
+            justify-content: center;
+            align-items: center;
+            margin-left: 0;
+            margin-top: 0 !important;
+        }
+        .checkbox-row-grid label {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 0;
+            font-weight: normal;
+            margin-bottom: 0;
+            white-space: nowrap;
+        }
+        .checkbox-row-grid label:first-child {
+            margin-right: 0.7em;
+        }
+        .checkbox-row-grid label,
+        .checkbox-row-grid input[type="checkbox"] {
+            padding: 0 !important;
+            margin: 0 !important;
+            gap: 0 !important;
+            font-size: 1em !important;
+            line-height: 1 !important;
+            vertical-align: middle !important;
+        }
+        .checkbox-row-grid label {
+            display: inline-flex !important;
+            align-items: center !important;
+            white-space: nowrap !important;
+        }
+        .checkbox-row-grid label:first-child {
+            margin-right: 0.5em !important;
+        }
+        .checkbox-row-center {
+            display: flex !important;
+            justify-content: center !important;
+            align-items: center !important;
+            gap: 1.5rem !important;
+            margin: 1rem 0 !important;
+            width: 100% !important;
+            grid-column: 1 / -1 !important;
+            grid-row: auto !important;
+        }
+        .checkbox-row-center label {
+            display: flex !important;
+            align-items: center !important;
+            gap: 0.3em !important;
+            margin: 0 !important;
+            font-weight: normal !important;
+            white-space: nowrap !important;
+            flex-direction: row !important;
+        }
+        .checkbox-row-center .custom-checkbox {
+            display: inline-flex !important;
+            align-items: center !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            flex-direction: row !important;
+        }
+        .custom-checkbox {
+            display: inline-flex;
+            align-items: center;
+            cursor: pointer;
+            margin: 0;
+            padding: 0;
+            white-space: nowrap;
+        }
+        .custom-checkbox input[type="checkbox"] {
+            display: none;
+        }
+        .custom-checkbox .checkmark {
+            width: 16px;
+            height: 16px;
+            border: 1.5px solid #888;
+            border-radius: 3px;
+            background: #fff;
+            margin-right: 0.1em;
+            position: relative;
+            display: inline-block;
+        }
+        .custom-checkbox input[type="checkbox"]:checked + .checkmark::after {
+            content: '';
+            position: absolute;
+            left: 4px;
+            top: 0px;
+            width: 5px;
+            height: 10px;
+            border: solid #223142;
+            border-width: 0 2px 2px 0;
+            transform: rotate(45deg);
+        }
+        .custom-checkbox span:last-child {
+            margin-left: 0;
+        }
+        .custom-checkbox.uzk-parent {
+            position: relative;
+        }
+        .custom-checkbox .uzk-group {
+            display: none;
+            position: absolute;
+            left: 0;
+            top: 1.7em;
+            z-index: 2;
+            background: #fff;
+            box-shadow: 0 2px 8px rgba(34,49,66,0.07);
+            border-radius: 4px;
+            padding: 0.3em 0.7em 0.5em 0.7em;
+        }
+        .uzk-group-row {
+            margin-top: 0;
+        }
+        .form-grid .checkbox-row-center {
+            grid-column: 1 / -1 !important;
+            display: flex !important;
+            justify-content: center !important;
+            align-items: center !important;
+            gap: 1.5rem !important;
+            margin: 1rem 0 !important;
+            width: 100% !important;
+        }
+        .grid-form .checkbox-row-center {
+            display: flex !important;
+            justify-content: center !important;
+            align-items: center !important;
+            gap: 1.5rem !important;
+            margin: 1rem 0 !important;
+            width: 100% !important;
+        }
+    </style>
+</head>
+<body>
+    <header>Калькулятор металлоизделий</header>
+    <nav>
+        <button class="tab active" data-tab="pokovki">Поковки</button>
+        <button class="tab" data-tab="otlivki">Отливки</button>
+        <button class="tab" data-tab="gotovie">Готовые изделия</button>
+        <button class="tab" data-tab="kp">КП</button>
+        <button class="tab" data-tab="spravka">Справочник цен</button>
+        <button class="tab" data-tab="gost">ГОСТЫ</button>
+    </nav>
+    <section class="tab-content active" id="pokovki">
+        <div class="accordion">
+            <button class="accordion-btn" data-acc="krug">Поковки круглого сечения</button>
+            <div class="accordion-content" id="krug-content">
+                <div class="flex-row compact-flex">
+                    <div class="sketch-block">
+                        <svg width="320" height="140" viewBox="0 0 320 140">
+  <!-- Вид сбоку -->
+  <g>
+    <rect x="20" y="35" width="120" height="50" rx="8" fill="#fff" stroke="#222" stroke-width="1.5" />
+    <rect x="32" y="45" width="96" height="30" rx="4" fill="none" stroke="#222" stroke-width="1.5" />
+    <line x1="10" y1="60" x2="150" y2="60" stroke="#888" stroke-width="1" stroke-dasharray="6,5" />
+    <line x1="20" y1="110" x2="140" y2="110" stroke="#222" stroke-width="1.5" />
+    <path d="M23 107 L20 110 L23 113" fill="none" stroke="#222" stroke-width="1.5" />
+    <path d="M137 107 L140 110 L137 113" fill="none" stroke="#222" stroke-width="1.5" />
+    <text x="80" y="132" font-size="18" text-anchor="middle" fill="#222" font-style="italic">L</text>
+  </g>
+  <!-- Вид спереди -->
+  <g>
+    <circle cx="240" cy="60" r="28" fill="#fff" stroke="#222" stroke-width="1.5" />
+    <circle cx="240" cy="60" r="20" fill="none" stroke="#222" stroke-width="1.5" />
+    <line x1="200" y1="60" x2="280" y2="60" stroke="#888" stroke-width="1" stroke-dasharray="6,5" />
+    <line x1="240" y1="32" x2="240" y2="88" stroke="#888" stroke-width="1" stroke-dasharray="6,5" />
+    <line x1="212" y1="110" x2="268" y2="110" stroke="#222" stroke-width="1.5" />
+    <path d="M215 107 L212 110 L215 113" fill="none" stroke="#222" stroke-width="1.5" />
+    <path d="M265 107 L268 110 L265 113" fill="none" stroke="#222" stroke-width="1.5" />
+    <text x="240" y="132" font-size="18" text-anchor="middle" fill="#222" font-style="italic">D</text>
+  </g>
+</svg>
+                        <div class="extra-info">
+                            <b>Дополнительно:</b><br>
+                            Диапазон D: 150–1100 мм<br>
+                            Диапазон L: до 12 000 мм
+                        </div>
+                    </div>
+                    <form class="input-form grid-form" id="krug-form">
+                        <div class="form-grid">
+                            <label>L, мм:<br><input type="number" name="length" min="1" max="12000" value="500" placeholder="Введите длину"></label>
+                            <label>Марка стали:<br>
+                                <select name="steel-grade">
+                                    <option>20</option>
+                                    <option>35</option>
+                                    <option>45</option>
+                                    <option>16Г</option>
+                                    <option>40Х</option>
+                                    <option>40ХН</option>
+                                    <option>22К</option>
+                                    <option>10ХСНД</option>
+                                    <option>6ХВ2С</option>
+                                    <option>12ХН3А</option>
+                                    <option>30ХГСА</option>
+                                    <option>09Г2С</option>
+                                    <option>15ХМ</option>
+                                    <option>20ЮЧ</option>
+                                    <option>4Х5МФС</option>
+                                    <option>34ХН1М</option>
+                                    <option>38ХН3МФА</option>
+                                    <option>40ХН2МА</option>
+                                    <option>20Х13</option>
+                                    <option>12Х18Н10Т</option>
+                                    <option>10Х17Н13М2Т</option>
+                                    <option>5ХНМ</option>
+                                    <option>ХВГ</option>
+                                </select>
+                            </label>
+                            <label>D, мм:<br><input type="number" name="diameter" min="150" max="1100" value="200" placeholder="Введите диаметр"></label>
+                            <label>Группа:<br>
+                                <select name="group">
+                                    <option>I</option>
+                                    <option>II</option>
+                                    <option>III</option>
+                                    <option>IV</option>
+                                    <option>V</option>
+                                </select>
+                            </label>
+                            <label>Припуск по L, мм:<br><input type="number" name="allowanceL" min="0" value="30"></label>
+                            <label>Наценка, %:<br><input type="number" name="markup" min="0" max="100" value="10"></label>
+                            <label>Припуск по D, мм:<br><input type="number" name="allowanceD" min="0" value="30"></label>
+                            <div class="checkbox-row-center">
+                                <label class="custom-checkbox" style="display: flex; align-items: center; gap: 0.5em;">
+                                    <input type="checkbox" name="uzk"/>
+                                    <span class="checkmark"></span>
+                                    <span>УЗК</span>
+                                    <span class="uzk-group-inline" style="display:none; margin-left: 0.5em;">
+                                        <label style="font-weight: normal; margin: 0;">
+                                            Группа УЗК:
+                                    <select name="uzk-group">
+                                        <option>2</option>
+                                        <option>2n</option>
+                                        <option>3</option>
+                                        <option>4</option>
+                                        <option>4n</option>
+                                    </select>
+                                </label>
+                                    </span>
+                                </label>
+                                <label class="custom-checkbox">
+                                    <input type="checkbox" name="mech"/>
+                                    <span class="checkmark"></span>
+                                    <span>Мехобработка</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="form-grid-btn">
+                            <button type="button" id="krug-calc-btn">Рассчитать</button>
+                        </div>
+                    </form>
+                </div>
+                <div id="krug-result" style="margin-top:1.2em;font-weight:bold; width:100%;"></div>
+            </div>
+            <button class="accordion-btn" data-acc="pryam">Поковки прямоугольного сечения</button>
+            <div class="accordion-content" id="pryam-content">
+                <div class="flex-row compact-flex">
+                    <div class="sketch-block">
+                        <svg width="320" height="140" viewBox="0 0 320 140">
+  <!-- Вид сбоку -->
+  <g>
+    <rect x="20" y="35" width="120" height="50" rx="8" fill="#fff" stroke="#222" stroke-width="1.5" />
+    <rect x="32" y="45" width="96" height="30" rx="4" fill="none" stroke="#222" stroke-width="1.5" />
+    <line x1="10" y1="60" x2="150" y2="60" stroke="#888" stroke-width="1" stroke-dasharray="6,5" />
+    <line x1="20" y1="110" x2="140" y2="110" stroke="#222" stroke-width="1.5" />
+    <path d="M23 107 L20 110 L23 113" fill="none" stroke="#222" stroke-width="1.5" />
+    <path d="M137 107 L140 110 L137 113" fill="none" stroke="#222" stroke-width="1.5" />
+    <text x="80" y="132" font-size="18" text-anchor="middle" fill="#222" font-style="italic">L</text>
+  </g>
+  <!-- Вид спереди -->
+  <g>
+    <rect x="210" y="45" width="50" height="30" rx="8" fill="#fff" stroke="#222" stroke-width="1.5" />
+    <rect x="220" y="53" width="30" height="14" rx="4" fill="none" stroke="#222" stroke-width="1.5" />
+    <line x1="210" y1="60" x2="260" y2="60" stroke="#888" stroke-width="1" stroke-dasharray="6,5" />
+    <line x1="235" y1="45" x2="235" y2="75" stroke="#888" stroke-width="1" stroke-dasharray="6,5" />
+    <line x1="210" y1="110" x2="260" y2="110" stroke="#222" stroke-width="1.5" />
+    <path d="M213 107 L210 110 L213 113" fill="none" stroke="#222" stroke-width="1.5" />
+    <path d="M257 107 L260 110 L257 113" fill="none" stroke="#222" stroke-width="1.5" />
+    <text x="235" y="132" font-size="18" text-anchor="middle" fill="#222" font-style="italic">B</text>
+    <line x1="270" y1="45" x2="270" y2="75" stroke="#222" stroke-width="1.5" />
+    <path d="M267 48 L270 45 L273 48" fill="none" stroke="#222" stroke-width="1.5" />
+    <path d="M267 72 L270 75 L273 72" fill="none" stroke="#222" stroke-width="1.5" />
+    <text x="282" y="62" font-size="18" text-anchor="start" fill="#222" font-style="italic">H</text>
+  </g>
+</svg>
+                        <div class="extra-info">
+                            <b>Дополнительно:</b><br>
+                            Диапазон H: 150–1100 мм<br>
+                            Диапазон B: 150–1300 мм<br>
+                            Диапазон L: до 12 000 мм
+                        </div>
+                    </div>
+                    <form class="input-form grid-form" id="pryam-form">
+                        <div class="form-grid">
+                            <label>H, мм:<br><input type="number" name="height" min="150" max="1100" value="200" placeholder="Введите H"></label>
+                            <label>Группа:<br>
+                                <select name="group">
+                                    <option>I</option>
+                                    <option>II</option>
+                                    <option>III</option>
+                                    <option>IV</option>
+                                    <option>V</option>
+                                </select>
+                            </label>
+                            <label>B, мм:<br><input type="number" name="width" min="150" max="1300" value="300" placeholder="Введите B"></label>
+                            <label>Марка стали:<br>
+                                <select name="steel-grade">
+                                    <option>20</option>
+                                    <option>35</option>
+                                    <option>45</option>
+                                    <option>16Г</option>
+                                    <option>40Х</option>
+                                    <option>40ХН</option>
+                                    <option>22К</option>
+                                    <option>10ХСНД</option>
+                                    <option>6ХВ2С</option>
+                                    <option>12ХН3А</option>
+                                    <option>30ХГСА</option>
+                                    <option>09Г2С</option>
+                                    <option>15ХМ</option>
+                                    <option>20ЮЧ</option>
+                                    <option>4Х5МФС</option>
+                                    <option>34ХН1М</option>
+                                    <option>38ХН3МФА</option>
+                                    <option>40ХН2МА</option>
+                                    <option>20Х13</option>
+                                    <option>12Х18Н10Т</option>
+                                    <option>10Х17Н13М2Т</option>
+                                    <option>5ХНМ</option>
+                                    <option>ХВГ</option>
+                                </select>
+                            </label>
+                            <label>L, мм:<br><input type="number" name="length" min="1" max="12000" value="1000" placeholder="Введите L"></label>
+                            <label>Наценка, %:<br><input type="number" name="markup" min="0" max="100" value="10"></label>
+                            <div class="checkbox-row-center">
+                                <label class="custom-checkbox" style="display: flex; align-items: center; gap: 0.5em;">
+                                    <input type="checkbox" name="uzk"/>
+                                    <span class="checkmark"></span>
+                                    <span>УЗК</span>
+                                    <span class="uzk-group-inline" style="display:none; margin-left: 0.5em;">
+                                        <label style="font-weight: normal; margin: 0;">
+                                            Группа УЗК:
+                                    <select name="uzk-group">
+                                        <option>2</option>
+                                        <option>2n</option>
+                                        <option>3</option>
+                                        <option>4</option>
+                                        <option>4n</option>
+                                    </select>
+                                        </label>
+                                    </span>
+                                </label>
+                                <label class="custom-checkbox">
+                                    <input type="checkbox" name="mech"/>
+                                    <span class="checkmark"></span>
+                                    <span>Мехобработка</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="form-grid-btn">
+                            <button type="button" id="pryam-calc-btn">Рассчитать</button>
+                        </div>
+                    </form>
+                </div>
+                <div id="pryam-result" style="margin-top:1.2em;font-weight:bold; width:100%;"></div>
+            </div>
+            <button class="accordion-btn" data-acc="cilindr">Цилиндр</button>
+            <div class="accordion-content" id="cilindr-content">
+                <div class="flex-row compact-flex">
+                    <div class="sketch-block">
+                        <svg width="340" height="120" viewBox="0 0 340 120">
+  <defs>
+    <pattern id="hatch_cyl" width="6" height="6" patternTransform="rotate(45 0 0)" patternUnits="userSpaceOnUse">
+      <rect x="0" y="0" width="3" height="6" fill="#fff" />
+      <rect x="3" y="0" width="3" height="6" fill="#e0e0e0" />
+    </pattern>
+  </defs>
+  <!-- Вид сбоку -->
+  <g>
+    <!-- Наружный контур -->
+    <rect x="20" y="30" width="130" height="50" fill="url(#hatch_cyl)" stroke="#222" stroke-width="1.5" />
+    <!-- Внутренний контур (отверстие) -->
+    <rect x="50" y="45" width="70" height="20" fill="#fff" stroke="#222" stroke-width="1.5" />
+    <!-- Осевая линия -->
+    <line x1="20" y1="55" x2="150" y2="55" stroke="#888" stroke-width="1" stroke-dasharray="5,4" />
+    <!-- Размер d -->
+    <line x1="50" y1="25" x2="50" y2="45" stroke="#222" stroke-width="1.5" />
+    <!-- Левая стрелка d -->
+    <path d="M47 28 L50 25 L53 28" fill="none" stroke="#222" stroke-width="1.5" />
+    <!-- Правая стрелка d -->
+    <path d="M47 42 L50 45 L53 42" fill="none" stroke="#222" stroke-width="1.5" />
+    <text x="44" y="20" font-size="13" text-anchor="end" fill="#222" font-style="italic">d</text>
+    <!-- Размер L -->
+    <line x1="20" y1="105" x2="150" y2="105" stroke="#222" stroke-width="1.5" />
+    <!-- Левая стрелка L -->
+    <path d="M23 102 L20 105 L23 108" fill="none" stroke="#222" stroke-width="1.5" />
+    <!-- Правая стрелка L -->
+    <path d="M147 102 L150 105 L147 108" fill="none" stroke="#222" stroke-width="1.5" />
+    <text x="85" y="118" font-size="13" text-anchor="middle" fill="#222" font-style="italic">L</text>
+  </g>
+  <!-- Вид спереди -->
+  <g>
+    <!-- Наружный круг -->
+    <circle cx="250" cy="55" r="35" fill="#fff" stroke="#222" stroke-width="1.5" />
+    <!-- Внутренний круг -->
+    <circle cx="250" cy="55" r="17" fill="#fff" stroke="#222" stroke-width="1.5" />
+    <!-- Осевая линия горизонтальная -->
+    <line x1="215" y1="55" x2="285" y2="55" stroke="#888" stroke-width="1" stroke-dasharray="5,4" />
+    <!-- Осевая линия вертикальная -->
+    <line x1="250" y1="20" x2="250" y2="90" stroke="#888" stroke-width="1" stroke-dasharray="5,4" />
+    <!-- Размер D -->
+    <line x1="285" y1="105" x2="215" y2="105" stroke="#222" stroke-width="1.5" />
+    <!-- Левая стрелка D -->
+    <path d="M218 102 L215 105 L218 108" fill="none" stroke="#222" stroke-width="1.5" />
+    <!-- Правая стрелка D -->
+    <path d="M282 102 L285 105 L282 108" fill="none" stroke="#222" stroke-width="1.5" />
+    <text x="250" y="118" font-size="13" text-anchor="middle" fill="#222" font-style="italic">D</text>
+  </g>
+</svg>
+                        <div class="extra-info">
+                            <b>Дополнительно:</b><br>
+                            Диапазон D: 360–1200 мм<br>
+                            Диапазон d: 160–630 мм<br>
+                            Диапазон L: до 4000 мм
+                        </div>
+                    </div>
+                    <form class="input-form grid-form" id="cilindr-form">
+                        <div class="form-grid">
+                            <label>D, мм:<br><input type="number" name="diameter" min="360" max="1200" value="400" placeholder="Введите D"></label>
+                            <label>Группа:<br>
+                                <select name="group">
+                                    <option>I</option>
+                                    <option>II</option>
+                                    <option>III</option>
+                                    <option>IV</option>
+                                    <option>V</option>
+                                </select>
+                            </label>
+                            <label>d, мм:<br><input type="number" name="diameter_inner" min="160" max="630" value="200" placeholder="Введите d"></label>
+                            <label>Марка стали:<br>
+                                <select name="steel-grade">
+                                    <option>20</option>
+                                    <option>35</option>
+                                    <option>45</option>
+                                    <option>16Г</option>
+                                    <option>40Х</option>
+                                    <option>40ХН</option>
+                                    <option>22К</option>
+                                    <option>10ХСНД</option>
+                                    <option>6ХВ2С</option>
+                                    <option>12ХН3А</option>
+                                    <option>30ХГСА</option>
+                                    <option>09Г2С</option>
+                                    <option>15ХМ</option>
+                                    <option>20ЮЧ</option>
+                                    <option>4Х5МФС</option>
+                                    <option>34ХН1М</option>
+                                    <option>38ХН3МФА</option>
+                                    <option>40ХН2МА</option>
+                                    <option>20Х13</option>
+                                    <option>12Х18Н10Т</option>
+                                    <option>10Х17Н13М2Т</option>
+                                    <option>5ХНМ</option>
+                                    <option>ХВГ</option>
+                                </select>
+                            </label>
+                            <label>L, мм:<br><input type="number" name="length" min="1" max="4000" value="1000" placeholder="Введите L"></label>
+                            <label>Наценка, %:<br><input type="number" name="markup" min="0" max="100" value="10"></label>
+                            <div class="checkbox-row-center">
+                                <label class="custom-checkbox" style="display: flex; align-items: center; gap: 0.5em;">
+                                    <input type="checkbox" name="uzk"/>
+                                    <span class="checkmark"></span>
+                                    <span>УЗК</span>
+                                    <span class="uzk-group-inline" style="display:none; margin-left: 0.5em;">
+                                        <label style="font-weight: normal; margin: 0;">
+                                            Группа УЗК:
+                                    <select name="uzk-group">
+                                        <option>2</option>
+                                        <option>2n</option>
+                                        <option>3</option>
+                                        <option>4</option>
+                                        <option>4n</option>
+                                    </select>
+                                        </label>
+                                    </span>
+                                </label>
+                                <label class="custom-checkbox">
+                                    <input type="checkbox" name="mech"/>
+                                    <span class="checkmark"></span>
+                                    <span>Мехобработка</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="form-grid-btn">
+                            <button type="button" id="cilindr-calc-btn">Рассчитать</button>
+                        </div>
+                    </form>
+                </div>
+                <div id="cilindr-result" style="margin-top:1.2em;font-weight:bold;"></div>
+            </div>
+            <button class="accordion-btn" data-acc="disk">Диск</button>
+            <div class="accordion-content" id="disk-content">
+                <div class="flex-row compact-flex">
+                    <div class="sketch-block">
+                        <svg width="320" height="180" viewBox="0 0 320 180">
+  <defs>
+    <pattern id="hatch_disk2" width="6" height="6" patternTransform="rotate(45 0 0)" patternUnits="userSpaceOnUse">
+      <rect x="0" y="0" width="3" height="6" fill="#fff" />
+      <rect x="3" y="0" width="3" height="6" fill="#e0e0e0" />
+    </pattern>
+  </defs>
+  <!-- Левый вид (сбоку) -->
+  <g>
+    <rect x="40" y="20" width="40" height="120" fill="#fff" stroke="#222" stroke-width="2" />
+    <rect x="40" y="20" width="40" height="40" fill="url(#hatch_disk2)" stroke="none" />
+    <rect x="40" y="100" width="40" height="40" fill="url(#hatch_disk2)" stroke="none" />
+    <line x1="0" y1="80" x2="120" y2="80" stroke="#888" stroke-width="1" stroke-dasharray="6,5" />
+    <line x1="35" y1="65" x2="35" y2="95" stroke="#222" stroke-width="1.5" />
+    <path d="M32 68 L35 65 L38 68" fill="none" stroke="#222" stroke-width="1.5" />
+    <path d="M32 92 L35 95 L38 92" fill="none" stroke="#222" stroke-width="1.5" />
+    <text x="28" y="82" font-size="15" text-anchor="middle" fill="#222" font-style="italic">d</text>
+    <line x1="40" y1="150" x2="80" y2="150" stroke="#222" stroke-width="1.5" />
+    <path d="M43 147 L40 150 L43 153" fill="none" stroke="#222" stroke-width="1.5" />
+    <path d="M77 147 L80 150 L77 153" fill="none" stroke="#222" stroke-width="1.5" />
+    <text x="60" y="165" font-size="15" text-anchor="middle" fill="#222" font-style="italic">H</text>
+  </g>
+  <!-- Правый вид (спереди) -->
+  <g>
+    <!-- Наружный круг -->
+    <circle cx="230" cy="80" r="40" fill="#fff" stroke="#222" stroke-width="1.5" />
+    <!-- Внутренний круг -->
+    <circle cx="230" cy="80" r="15" fill="#fff" stroke="#222" stroke-width="1.2" />
+    <!-- Осевая линия горизонтальная -->
+    <line x1="190" y1="80" x2="270" y2="80" stroke="#888" stroke-width="1" stroke-dasharray="6,5" />
+    <!-- Осевая линия вертикальная -->
+    <line x1="230" y1="40" x2="230" y2="120" stroke="#888" stroke-width="1" stroke-dasharray="6,5" />
+    <!-- Размер D -->
+    <line x1="190" y1="150" x2="270" y2="150" stroke="#222" stroke-width="1.5" />
+    <!-- Левая стрелка D -->
+    <path d="M193 147 L190 150 L193 153" fill="none" stroke="#222" stroke-width="1.5" />
+    <!-- Правая стрелка D -->
+    <path d="M267 147 L270 150 L267 153" fill="none" stroke="#222" stroke-width="1.5" />
+    <text x="230" y="165" font-size="15" text-anchor="middle" fill="#222" font-style="italic">D</text>
+  </g>
+</svg>
+                        <div class="extra-info">
+                            <b>Дополнительно:</b><br>
+                            Диапазон D: до 3500 мм<br>
+                            Диапазон d: до 0.5×D или d = 0<br>
+                            Диапазон H: 150–1100 мм
+                        </div>
+                    </div>
+                    <form class="input-form grid-form" id="disk-form">
+                        <div class="form-grid">
+                            <label>D, мм:<br><input type="number" name="diameter" min="1" max="3500" value="500" placeholder="Введите D"></label>
+                            <label>Группа:<br>
+                                <select name="group">
+                                    <option>I</option>
+                                    <option>II</option>
+                                    <option>III</option>
+                                    <option>IV</option>
+                                    <option>V</option>
+                                </select>
+                            </label>
+                            <label>d, мм:<br><input type="number" name="diameter_inner" min="0" value="0" placeholder="Введите d"></label>
+                            <label>Марка стали:<br>
+                                <select name="steel-grade">
+                                    <option>20</option>
+                                    <option>35</option>
+                                    <option>45</option>
+                                    <option>16Г</option>
+                                    <option>40Х</option>
+                                    <option>40ХН</option>
+                                    <option>22К</option>
+                                    <option>10ХСНД</option>
+                                    <option>6ХВ2С</option>
+                                    <option>12ХН3А</option>
+                                    <option>30ХГСА</option>
+                                    <option>09Г2С</option>
+                                    <option>15ХМ</option>
+                                    <option>20ЮЧ</option>
+                                    <option>4Х5МФС</option>
+                                    <option>34ХН1М</option>
+                                    <option>38ХН3МФА</option>
+                                    <option>40ХН2МА</option>
+                                    <option>20Х13</option>
+                                    <option>12Х18Н10Т</option>
+                                    <option>10Х17Н13М2Т</option>
+                                    <option>5ХНМ</option>
+                                    <option>ХВГ</option>
+                                </select>
+                            </label>
+                            <label>H, мм:<br><input type="number" name="height" min="150" max="1100" value="200" placeholder="Введите H"></label>
+                            <label>Наценка, %:<br><input type="number" name="markup" min="0" max="100" value="10"></label>
+                            <div class="checkbox-row-center">
+                                <label class="custom-checkbox" style="display: flex; align-items: center; gap: 0.5em;">
+                                    <input type="checkbox" name="uzk"/>
+                                    <span class="checkmark"></span>
+                                    <span>УЗК</span>
+                                    <span class="uzk-group-inline" style="display:none; margin-left: 0.5em;">
+                                        <label style="font-weight: normal; margin: 0;">
+                                            Группа УЗК:
+                                    <select name="uzk-group">
+                                        <option>2</option>
+                                        <option>2n</option>
+                                        <option>3</option>
+                                        <option>4</option>
+                                        <option>4n</option>
+                                    </select>
+                                </label>
+                                    </span>
+                                </label>
+                                <label class="custom-checkbox">
+                                    <input type="checkbox" name="mech"/>
+                                    <span class="checkmark"></span>
+                                    <span>Мехобработка</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="form-grid-btn">
+                            <button type="button" id="disk-calc-btn">Рассчитать</button>
+                        </div>
+                    </form>
+                </div>
+                <div id="disk-result" style="margin-top:1.2em;font-weight:bold;"></div>
+            </div>
+            <button class="accordion-btn" data-acc="val">Ступенчатый вал</button>
+            <div class="accordion-content" id="val-content">
+                <div class="flex-row compact-flex">
+                    <div class="sketch-block">
+                        <svg width="500" height="160" viewBox="0 0 500 160">
+  <!-- Вид сбоку -->
+  <g>
+    <!-- Ступени вала -->
+    <rect x="20" y="60" width="40" height="40" fill="#fff" stroke="#222" stroke-width="1.5" />
+    <rect x="60" y="50" width="50" height="60" fill="#fff" stroke="#222" stroke-width="1.5" />
+    <rect x="110" y="45" width="60" height="70" fill="#fff" stroke="#222" stroke-width="1.5" />
+    <rect x="170" y="40" width="70" height="80" fill="#fff" stroke="#222" stroke-width="1.5" />
+    <rect x="240" y="35" width="80" height="90" fill="#fff" stroke="#222" stroke-width="1.5" />
+    
+    <!-- Осевая линия -->
+    <line x1="10" y1="80" x2="450" y2="80" stroke="#888" stroke-width="1" stroke-dasharray="6,5" />
+    
+    <!-- Размеры ступеней -->
+    <line x1="40" y1="95" x2="40" y2="65" stroke="#222" stroke-width="1.5" />
+    <path d="M37 68 L40 65 L43 68" fill="none" stroke="#222" stroke-width="1.5" />
+    <path d="M37 92 L40 95 L43 92" fill="none" stroke="#222" stroke-width="1.5" />
+    <text x="35" y="85" font-size="12" text-anchor="end" fill="#222" font-style="italic">D1</text>
+    
+    <line x1="85" y1="105" x2="85" y2="55" stroke="#222" stroke-width="1.5" />
+    <path d="M82 58 L85 55 L88 58" fill="none" stroke="#222" stroke-width="1.5" />
+    <path d="M82 102 L85 105 L88 102" fill="none" stroke="#222" stroke-width="1.5" />
+    <text x="80" y="95" font-size="12" text-anchor="end" fill="#222" font-style="italic">D2</text>
+    
+    <line x1="140" y1="110" x2="140" y2="50" stroke="#222" stroke-width="1.5" />
+    <path d="M137 53 L140 50 L143 53" fill="none" stroke="#222" stroke-width="1.5" />
+    <path d="M137 107 L140 110 L143 107" fill="none" stroke="#222" stroke-width="1.5" />
+    <text x="135" y="100" font-size="12" text-anchor="end" fill="#222" font-style="italic">D3</text>
+    
+    <line x1="205" y1="115" x2="205" y2="45" stroke="#222" stroke-width="1.5" />
+    <path d="M202 48 L205 45 L208 48" fill="none" stroke="#222" stroke-width="1.5" />
+    <path d="M202 112 L205 115 L208 112" fill="none" stroke="#222" stroke-width="1.5" />
+    <text x="200" y="105" font-size="12" text-anchor="end" fill="#222" font-style="italic">D4</text>
+    
+    <line x1="280" y1="120" x2="280" y2="40" stroke="#222" stroke-width="1.5" />
+    <path d="M277 43 L280 40 L283 43" fill="none" stroke="#222" stroke-width="1.5" />
+    <path d="M277 117 L280 120 L283 117" fill="none" stroke="#222" stroke-width="1.5" />
+    <text x="275" y="110" font-size="12" text-anchor="end" fill="#222" font-style="italic">D5</text>
+    
+    <!-- Размеры длин -->
+    <line x1="20" y1="140" x2="60" y2="140" stroke="#222" stroke-width="1.5" />
+    <path d="M23 137 L20 140 L23 143" fill="none" stroke="#222" stroke-width="1.5" />
+    <path d="M57 137 L60 140 L57 143" fill="none" stroke="#222" stroke-width="1.5" />
+    <text x="40" y="155" font-size="12" text-anchor="middle" fill="#222" font-style="italic">L1</text>
+    
+    <line x1="60" y1="140" x2="110" y2="140" stroke="#222" stroke-width="1.5" />
+    <path d="M63 137 L60 140 L63 143" fill="none" stroke="#222" stroke-width="1.5" />
+    <path d="M107 137 L110 140 L107 143" fill="none" stroke="#222" stroke-width="1.5" />
+    <text x="85" y="155" font-size="12" text-anchor="middle" fill="#222" font-style="italic">L2</text>
+    
+    <line x1="110" y1="140" x2="170" y2="140" stroke="#222" stroke-width="1.5" />
+    <path d="M113 137 L110 140 L113 143" fill="none" stroke="#222" stroke-width="1.5" />
+    <path d="M167 137 L170 140 L167 143" fill="none" stroke="#222" stroke-width="1.5" />
+    <text x="140" y="155" font-size="12" text-anchor="middle" fill="#222" font-style="italic">L3</text>
+    
+    <line x1="170" y1="140" x2="240" y2="140" stroke="#222" stroke-width="1.5" />
+    <path d="M173 137 L170 140 L173 143" fill="none" stroke="#222" stroke-width="1.5" />
+    <path d="M237 137 L240 140 L237 143" fill="none" stroke="#222" stroke-width="1.5" />
+    <text x="205" y="155" font-size="12" text-anchor="middle" fill="#222" font-style="italic">L4</text>
+    
+    <line x1="240" y1="140" x2="320" y2="140" stroke="#222" stroke-width="1.5" />
+    <path d="M243 137 L240 140 L243 143" fill="none" stroke="#222" stroke-width="1.5" />
+    <path d="M317 137 L320 140 L317 143" fill="none" stroke="#222" stroke-width="1.5" />
+    <text x="280" y="155" font-size="12" text-anchor="middle" fill="#222" font-style="italic">L5</text>
+  </g>
+</svg>
+                        <div class="extra-info">
+                            <b>Дополнительно:</b><br>
+                            Диапазон D: 150–1100 мм<br>
+                            Диапазон L: до 12 000 мм<br>
+                            До 5 ступеней
+                        </div>
+                    </div>
+                    <form class="input-form" id="val-form" style="min-width:450px;max-width:550px;width:100%;margin-left:32px;padding:2rem;">
+                        <div class="form-grid">
+                            <label>Группа:<br>
+                                <select name="group">
+                                    <option>I</option>
+                                    <option>II</option>
+                                    <option>III</option>
+                                    <option>IV</option>
+                                    <option>V</option>
+                                </select>
+                            </label>
+                            <label>Марка стали:<br>
+                                <select name="steel-grade">
+                                    <option>20</option>
+                                    <option>35</option>
+                                    <option>45</option>
+                                    <option>16Г</option>
+                                    <option>40Х</option>
+                                    <option>40ХН</option>
+                                    <option>22К</option>
+                                    <option>10ХСНД</option>
+                                    <option>6ХВ2С</option>
+                                    <option>12ХН3А</option>
+                                    <option>30ХГСА</option>
+                                    <option>09Г2С</option>
+                                    <option>15ХМ</option>
+                                    <option>20ЮЧ</option>
+                                    <option>4Х5МФС</option>
+                                    <option>34ХН1М</option>
+                                    <option>38ХН3МФА</option>
+                                    <option>40ХН2МА</option>
+                                    <option>20Х13</option>
+                                    <option>12Х18Н10Т</option>
+                                    <option>10Х17Н13М2Т</option>
+                                    <option>5ХНМ</option>
+                                    <option>ХВГ</option>
+                                </select>
+                            </label>
+                            <label>Припуск, мм:<br><input type="number" name="allowance" min="0" value="10"></label>
+                            <label>Наценка, %:<br><input type="number" name="markup" min="0" max="100" value="10"></label>
+                        </div>
+                        
+                        <div style="margin: 1rem 0;">
+                            <div style="display: flex; gap: 2rem; align-items: flex-start;">
+                                <!-- Левая колонка с заголовками -->
+                                <div style="display: flex; flex-direction: column; gap: 0.5rem; min-width: 120px;">
+                                    <div style="height: 2rem; display: flex; align-items: center;"></div>
+                                    <div style="height: 2rem; display: flex; align-items: center;">Количество ступеней:</div>
+                                    <div class="step-label" data-step="1" style="height: 2rem; display: flex; align-items: center;">D1, мм:</div>
+                                    <div class="step-label" data-step="1" style="height: 2rem; display: flex; align-items: center;">L1, мм:</div>
+                                    <div class="step-label" data-step="2" style="height: 2rem; display: flex; align-items: center;">D2, мм:</div>
+                                    <div class="step-label" data-step="2" style="height: 2rem; display: flex; align-items: center;">L2, мм:</div>
+                                    <div class="step-label" data-step="3" style="height: 2rem; display: flex; align-items: center;">D3, мм:</div>
+                                    <div class="step-label" data-step="3" style="height: 2rem; display: flex; align-items: center;">L3, мм:</div>
+                                    <div class="step-label" data-step="4" style="height: 2rem; display: flex; align-items: center;">D4, мм:</div>
+                                    <div class="step-label" data-step="4" style="height: 2rem; display: flex; align-items: center;">L4, мм:</div>
+                                    <div class="step-label" data-step="5" style="height: 2rem; display: flex; align-items: center;">D5, мм:</div>
+                                    <div class="step-label" data-step="5" style="height: 2rem; display: flex; align-items: center;">L5, мм:</div>
+                        </div>
+                        
+                                <!-- Правая колонка с полями ввода -->
+                                <div style="display: flex; flex-direction: column; gap: 0.5rem; flex: 1;">
+                                    <div style="height: 2rem; display: flex; align-items: center;"></div>
+                                    <div style="height: 2rem; display: flex; align-items: center;">
+                                        <select id="val-step-count" name="step-count" style="width: 100%;">
+                                            <option value="1">1</option>
+                                            <option value="2" selected>2</option>
+                                            <option value="3">3</option>
+                                            <option value="4">4</option>
+                                            <option value="5">5</option>
+                                        </select>
+                                    </div>
+                                    <div class="step-field" data-step="1" style="height: 2rem; display: flex; align-items: center;">
+                                        <input type="number" name="d1" min="150" max="1100" value="200" placeholder="D1" style="width: 100%;">
+                                    </div>
+                                    <div class="step-field" data-step="1" style="height: 2rem; display: flex; align-items: center;">
+                                        <input type="number" name="l1" min="1" max="12000" value="500" placeholder="L1" style="width: 100%;">
+                                    </div>
+                                    <div class="step-field" data-step="2" style="height: 2rem; display: flex; align-items: center;">
+                                        <input type="number" name="d2" min="150" max="1100" value="250" placeholder="D2" style="width: 100%;">
+                                    </div>
+                                    <div class="step-field" data-step="2" style="height: 2rem; display: flex; align-items: center;">
+                                        <input type="number" name="l2" min="1" max="12000" value="400" placeholder="L2" style="width: 100%;">
+                                    </div>
+                                    <div class="step-field" data-step="3" style="height: 2rem; display: flex; align-items: center;">
+                                        <input type="number" name="d3" min="150" max="1100" value="300" placeholder="D3" style="width: 100%;">
+                                    </div>
+                                    <div class="step-field" data-step="3" style="height: 2rem; display: flex; align-items: center;">
+                                        <input type="number" name="l3" min="1" max="12000" value="300" placeholder="L3" style="width: 100%;">
+                                    </div>
+                                    <div class="step-field" data-step="4" style="height: 2rem; display: flex; align-items: center;">
+                                        <input type="number" name="d4" min="150" max="1100" value="350" placeholder="D4" style="width: 100%;">
+                                    </div>
+                                    <div class="step-field" data-step="4" style="height: 2rem; display: flex; align-items: center;">
+                                        <input type="number" name="l4" min="1" max="12000" value="200" placeholder="L4" style="width: 100%;">
+                                    </div>
+                                    <div class="step-field" data-step="5" style="height: 2rem; display: flex; align-items: center;">
+                                        <input type="number" name="d5" min="150" max="1100" value="400" placeholder="D5" style="width: 100%;">
+                                    </div>
+                                    <div class="step-field" data-step="5" style="height: 2rem; display: flex; align-items: center;">
+                                        <input type="number" name="l5" min="1" max="12000" value="100" placeholder="L5" style="width: 100%;">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="checkbox-row-center">
+                            <label class="custom-checkbox" style="display: flex; align-items: center; gap: 0.5em;">
+                                <input type="checkbox" name="uzk"/>
+                                <span class="checkmark"></span>
+                                <span>УЗК</span>
+                                <span class="uzk-group-inline" style="display:none; margin-left: 0.5em;">
+                                    <label style="font-weight: normal; margin: 0;">
+                                        Группа УЗК:
+                                        <select name="uzk-group">
+                                            <option>2</option>
+                                            <option>2n</option>
+                                            <option>3</option>
+                                            <option>4</option>
+                                            <option>4n</option>
+                                        </select>
+                                    </label>
+                                </span>
+                            </label>
+                            <label class="custom-checkbox">
+                                <input type="checkbox" name="mech"/>
+                                <span class="checkmark"></span>
+                                <span>Мехобработка</span>
+                            </label>
+                        </div>
+                        
+                        <div class="uzk-group-row" style="grid-column: 1 / -1; display: none; margin-top: 0.5rem;">
+                            <label>Группа УЗК:<br>
+                                <select name="uzk-group">
+                                    <option>2</option>
+                                    <option>2n</option>
+                                    <option>3</option>
+                                    <option>4</option>
+                                    <option>4n</option>
+                                </select>
+                            </label>
+                        </div>
+                        
+                        <div class="form-grid-btn">
+                            <button type="button" id="val-calc-btn">Рассчитать</button>
+                        </div>
+                    </form>
+                </div>
+                <div id="val-result" style="margin-top:1.2em;font-weight:bold;"></div>
+            </div>
+        </div>
+    </section>
+    <section class="tab-content" id="otlivki">
+        <div class="accordion">
+            <button class="accordion-btn" data-acc="otlivka">Отливка</button>
+            <div class="accordion-content" id="otlivka-content">
+                <div class="flex-row compact-flex">
+                    <div class="sketch-block">
+                        <!-- Место для эскиза -->
+                        <div style="width: 320px; height: 200px; border: 2px solid #ccc; display: flex; align-items: center; justify-content: center; color: #888; font-style: italic;">
+                            Эскиз отливки
+                        </div>
+                        <div class="extra-info">
+                            <!-- Место для дополнительной информации -->
+                        </div>
+                    </div>
+                    <form class="input-form grid-form" id="otlivka-form">
+                        <div class="form-grid" style="display: flex; flex-wrap: wrap; gap: 1.1rem 1.2rem;">
+                            <div style="flex: 1; min-width: 200px;">
+                                <label>Металл:<br>
+                                    <select name="metal-type" id="metal-type">
+                                        <option value="steel">Сталь</option>
+                                        <option value="cast-iron">Чугун</option>
+                                    </select>
+                                </label>
+                                <label>Группа:<br>
+                                    <select name="group" id="group-select">
+                                        <option value="1">1</option>
+                                        <option value="2">2</option>
+                                        <option value="3">3</option>
+                                        <option value="4">4</option>
+                                        <option value="5">5</option>
+                                    </select>
+                                </label>
+                                <label>Марка металла:<br>
+                                    <select name="metal-grade" id="metal-grade">
+                                        <!-- Марки стали -->
+                                        <option value="20Л" data-metal="steel">20Л</option>
+                                        <option value="25Л" data-metal="steel">25Л</option>
+                                        <option value="30Л" data-metal="steel">30Л</option>
+                                        <option value="35Л" data-metal="steel">35Л</option>
+                                        <option value="40Л" data-metal="steel">40Л</option>
+                                        <option value="45Л" data-metal="steel">45Л</option>
+                                        <option value="50Л" data-metal="steel">50Л</option>
+                                        <option value="20ГЛ" data-metal="steel">20ГЛ</option>
+                                        <option value="35ГЛ" data-metal="steel">35ГЛ</option>
+                                        <option value="20ГСЛ" data-metal="steel">20ГСЛ</option>
+                                        <option value="30ГСЛ" data-metal="steel">30ГСЛ</option>
+                                        <option value="20Г1ФЛ" data-metal="steel">20Г1ФЛ</option>
+                                        <option value="20ФЛ" data-metal="steel">20ФЛ</option>
+                                        <option value="30ХГСФЛ" data-metal="steel">30ХГСФЛ</option>
+                                        <option value="45ФЛ" data-metal="steel">45ФЛ</option>
+                                        <option value="32Х06Л" data-metal="steel">32Х06Л</option>
+                                        <option value="40ХЛ" data-metal="steel">40ХЛ</option>
+                                        <option value="20ХМЛ" data-metal="steel">20ХМЛ</option>
+                                        <option value="20ХМФЛ" data-metal="steel">20ХМФЛ</option>
+                                        <option value="20ГНМФЛ" data-metal="steel">20ГНМФЛ</option>
+                                        <option value="35ХМЛ" data-metal="steel">35ХМЛ</option>
+                                        <option value="30ХНМЛ" data-metal="steel">30ХНМЛ</option>
+                                        <option value="35ХГСЛ" data-metal="steel">35ХГСЛ</option>
+                                        <option value="35НГМЛ" data-metal="steel">35НГМЛ</option>
+                                        <!-- Марки чугуна -->
+                                        <option value="СЧ10" data-metal="cast-iron" style="display:none;">СЧ10</option>
+                                        <option value="СЧ15" data-metal="cast-iron" style="display:none;">СЧ15</option>
+                                        <option value="СЧ20" data-metal="cast-iron" style="display:none;">СЧ20</option>
+                                        <option value="СЧ25" data-metal="cast-iron" style="display:none;">СЧ25</option>
+                                        <option value="СЧ30" data-metal="cast-iron" style="display:none;">СЧ30</option>
+                                        <option value="СЧ35" data-metal="cast-iron" style="display:none;">СЧ35</option>
+                                        <option value="ВЧ40" data-metal="cast-iron" style="display:none;">ВЧ40</option>
+                                        <option value="ВЧ45" data-metal="cast-iron" style="display:none;">ВЧ45</option>
+                                        <option value="ВЧ50" data-metal="cast-iron" style="display:none;">ВЧ50</option>
+                                        <option value="ВЧ60" data-metal="cast-iron" style="display:none;">ВЧ60</option>
+                                        <option value="ВЧ70" data-metal="cast-iron" style="display:none;">ВЧ70</option>
+                                        <option value="ВЧ80" data-metal="cast-iron" style="display:none;">ВЧ80</option>
+                                        <option value="ВЧ100" data-metal="cast-iron" style="display:none;">ВЧ100</option>
+                                    </select>
+                                </label>
+                                <label>Вес изделия, кг:<br><input type="number" name="weight" min="0.1" max="50000" value="10" step="0.1" placeholder="Введите вес"></label>
+                                <label>Припуск, %:<br><input type="number" name="allowance" min="0" max="100" value="30" placeholder="Введите припуск"></label>
+                            </div>
+                            <div style="flex: 1; min-width: 200px;">
+                                <label>Наименование чертежа:<br><input type="text" name="drawing-name" placeholder="Введите наименование чертежа"></label>
+                                <label>Количество, шт:<br><input type="number" name="quantity" min="1" value="1" placeholder="Введите количество"></label>
+                                <label>Наценка, %:<br><input type="number" name="markup" min="0" max="100" value="10"></label>
+                            </div>
+                            <div class="checkbox-row-center" style="width: 100%; margin-top: 1rem;">
+                                <label class="custom-checkbox">
+                                    <input type="checkbox" name="model-equipment"/>
+                                    <span class="checkmark"></span>
+                                    <span>Модельная оснастка</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="form-grid-btn">
+                            <button type="button" id="otlivka-calc-btn">Рассчитать</button>
+                        </div>
+                        <div id="otlivka-result" style="margin-top:1.2em;font-weight:bold;"></div>
+                    </form>
+                </div>
+            </div>
+            <button class="accordion-btn" data-acc="bronza">Отливка из бронзы</button>
+            <div class="accordion-content" id="bronza-content">
+                <div class="flex-row compact-flex">
+                    <div class="sketch-block">
+                        <!-- Место для эскиза -->
+                        <div style="width: 320px; height: 200px; border: 2px solid #ccc; display: flex; align-items: center; justify-content: center; color: #888; font-style: italic;">
+                            Эскиз бронзовой отливки
+                        </div>
+                        <div class="extra-info">
+                            <!-- Место для дополнительной информации -->
+                        </div>
+                    </div>
+                    <form class="input-form grid-form" id="bronza-form">
+                        <div class="form-grid" style="display: flex; flex-wrap: wrap; gap: 1.1rem 1.2rem;">
+                            <div style="flex: 1; min-width: 200px;">
+                                <label>Внешний диаметр, мм:<br><input type="number" name="outer-diameter" min="1" value="100" placeholder="Введите внешний диаметр"></label>
+                                <label>Внутренний диаметр, мм:<br><input type="number" name="inner-diameter" min="0" value="50" placeholder="Введите внутренний диаметр"></label>
+                                <label>Высота, мм:<br><input type="number" name="height" min="1" value="50" placeholder="Введите высоту"></label>
+                                <label>Наценка, %:<br><input type="number" name="markup" min="0" max="100" value="10"></label>
+                            </div>
+                            <div style="flex: 1; min-width: 200px;">
+                                <label>Наименование чертежа:<br><input type="text" name="drawing-name" placeholder="Введите наименование чертежа"></label>
+                                <label>Количество, шт:<br><input type="number" name="quantity" min="1" value="1" placeholder="Введите количество"></label>
+                                <label>Стоимость за кг, руб:<br><input type="number" name="price-per-kg" min="1" value="300" placeholder="Введите стоимость"></label>
+                            </div>
+                            <div class="checkbox-row-center" style="width: 100%; margin-top: 1rem;">
+                                <label class="custom-checkbox">
+                                    <input type="checkbox" name="model-equipment"/>
+                                    <span class="checkmark"></span>
+                                    <span>Модельная оснастка</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="form-grid-btn">
+                            <button type="button" id="bronza-calc-btn">Рассчитать</button>
+                        </div>
+                        <div id="bronza-result" style="margin-top:1.2em;font-weight:bold;"></div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+    <section class="tab-content" id="gotovie">
+        <div class="stub">В разработке</div>
+    </section>
+    <section class="tab-content" id="kp">
+        <div class="kp-container">
+            <!-- Таблица позиций в КП -->
+            <div class="positions-section">
+                <h3 style="color: #2c5aa0; margin-bottom: 1em;">Позиции в КП</h3>
+                <div id="kp-positions-table" style="margin-bottom: 2em;">
+                    <table class="calc-table" style="border-collapse:collapse; width:100%; font-size:1em;">
+                        <thead>
+                            <tr style="background:#f5f5f5;">
+                                <th style="border:1px solid #ccc; padding:8px;">№</th>
+                                <th style="border:1px solid #ccc; padding:8px;">Тип изделия</th>
+                                <th style="border:1px solid #ccc; padding:8px;">Чистовые размеры</th>
+                                <th style="border:1px solid #ccc; padding:8px;">Поставочные размеры</th>
+                                <th style="border:1px solid #ccc; padding:8px;">Материал</th>
+                                <th style="border:1px solid #ccc; padding:8px;">Вес, кг</th>
+                                <th style="border:1px solid #ccc; padding:8px;">Кол-во</th>
+                                <th style="border:1px solid #ccc; padding:8px;">Без наценки, руб</th>
+                                <th style="border:1px solid #ccc; padding:8px;">С наценкой, руб</th>
+                                <th style="border:1px solid #ccc; padding:8px;">Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Данные будут добавляться динамически -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Настройки коммерческого предложения -->
+            <div class="kp-settings">
+                <h3 style="color: #2c5aa0; margin-bottom: 1em;">Настройки коммерческого предложения</h3>
+                <div class="flex-row compact-flex">
+                    <!-- Логотип -->
+                    <div class="logo-section" style="flex: 0 0 250px;">
+                        <label>Логотип компании:</label>
+                        <div id="logo-container" style="width: 200px; height: 120px; border: 2px solid #ccc; display: flex; align-items: center; justify-content: center; margin: 1em 0; background: #f9f9f9;">
+                            <div style="color: #888; font-style: italic; text-align: center;">Загрузите логотип</div>
+                        </div>
+                        <input type="file" id="logo-upload" accept="image/*" style="display: none;">
+                        <button type="button" onclick="document.getElementById('logo-upload').click()" style="background: #4a90e2; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">Загрузить логотип</button>
+                    </div>
+
+                    <!-- Реквизиты -->
+                    <div class="company-details" style="flex: 1;">
+                        <label>Реквизиты компании:</label>
+                        <textarea style="width: 100%; height: 120px; margin: 1em 0; padding: 8px; border: 1px solid #ccc; resize: vertical;">Общество с ограниченной ответственностью «ИжПромСталь»
+ИНН 1800017485, КПП180001001
+Юр. адрес: 426039, Удмуртская Республика, г. Ижевск, Воткинское шоссе, зд. 168, офис 335
+Факт. адрес: 426000 Удмуртская Республик, г. Ижевск, ул. Максима Горького, 157 офис 1
+ПАО «Сбербанк», р/с 40702810668000037735, к/с 30101810400000000601, БИК 049401601
+e-mail: info@izhsteel.ru
+Сайт: www.izhsteel.ru</textarea>
+                    </div>
+                </div>
+
+                <!-- Остальные настройки -->
+                <div class="form-grid" style="margin-top: 1em;">
+                    <style>
+                        .form-grid label {
+                            margin-bottom: 1em;
+                            display: block;
+                        }
+                        .form-grid label:last-child {
+                            margin-bottom: 0;
+                        }
+                    </style>
+                    <label>Номер КП:<br><input type="text" placeholder="Например, 2266" style="width: 100%; padding: 8px; border: 1px solid #ccc;"></label>
+                    <label>Компания-получатель:<br><input type="text" placeholder="Название компании-получателя" style="width: 100%; padding: 8px; border: 1px solid #ccc;"></label>
+                    <label>КП действительно до:<br><input type="date" value="2025-08-27" style="width: 100%; padding: 8px; border: 1px solid #ccc;"></label>
+                    <label>Срок изготовления:<br>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <input type="number" value="2" min="1" style="width: 60px; padding: 8px; border: 1px solid #ccc;">
+                            <span>-</span>
+                            <input type="number" value="4" min="1" style="width: 60px; padding: 8px; border: 1px solid #ccc;">
+                            <select style="padding: 8px; border: 1px solid #ccc;">
+                                <option>календарных</option>
+                                <option>рабочих</option>
+                            </select>
+                        </div>
+                    </label>
+                    <label>Условия оплаты:<br>
+                        <select style="width: 100%; padding: 8px; border: 1px solid #ccc;">
+                            <option>50% предоплата, 50% доплата по письму о готовности продукции к отгрузке</option>
+                            <option>100% предоплата</option>
+                        </select>
+                    </label>
+                    <label>Генеральный директор:<br><input type="text" value="Бостриков В.С." style="width: 100%; padding: 8px; border: 1px solid #ccc;"></label>
+                    <label>Дополнительно:<br><textarea placeholder="Введите дополнительную информацию" style="width: 100%; padding: 8px; border: 1px solid #ccc; height: 60px; resize: vertical; box-sizing: border-box;"></textarea></label>
+                </div>
+
+                <!-- Кнопки выгрузки -->
+                <div style="margin-top: 2em; display: flex; gap: 1em;">
+                    <button type="button" id="create-kp-btn" style="background: #4a90e2; color: white; border: none; padding: 12px 24px; border-radius: 4px; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                        <span style="font-size: 1.2em;">📄</span>
+                        Создать КП (Word)
+                    </button>
+                    <button type="button" id="export-excel-btn" style="background: #28a745; color: white; border: none; padding: 12px 24px; border-radius: 4px; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                        <span style="font-size: 1.2em;">📊</span>
+                        Экспорт в Excel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+    <section class="tab-content" id="spravka">
+        <div class="stub">Справочник цен — в разработке</div>
+    </section>
+    <section class="tab-content" id="gost">
+        <div class="accordion">
+            <button class="accordion-btn" data-acc="gost8479-70">ГОСТ 8479-70</button>
+            <div class="accordion-content" id="gost8479-70-content">
+                <div style="text-align: center; padding: 2rem;">
+                    <h3 style="color: #223142; margin-bottom: 1rem;">ГОСТ 8479-70 - Поковки стальные штампованные</h3>
+                    <p style="color: #666; margin-bottom: 2rem;">Общие технические условия</p>
+                    <div style="background: #f8f9fa; border: 2px solid #ddd; border-radius: 8px; padding: 3rem; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                        <div style="font-size: 4rem; margin-bottom: 1rem;">📄</div>
+                        <h4 style="color: #223142; margin-bottom: 1rem;">ГОСТ 8479-70</h4>
+                        <p style="color: #666; margin-bottom: 2rem;">Поковки стальные штампованные. Общие технические условия</p>
+                        <a href="file:///C:/Users/PC/Downloads/8479-70.pdf" 
+                           target="_blank" 
+                           style="background: #223142; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block; transition: background 0.2s;"
+                           onmouseover="this.style.background='#1a2732'"
+                           onmouseout="this.style.background='#223142'">
+                            Открыть ГОСТ 8479-70 в новом окне
+                        </a>
+                        <div style="margin-top: 1rem; color: #888; font-size: 0.9rem;">
+                            <p>PDF файл откроется в новой вкладке браузера</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <button class="accordion-btn" data-acc="gost25054-81">ГОСТ 25054-81</button>
+            <div class="accordion-content" id="gost25054-81-content">
+                <div style="text-align: center; padding: 2rem;">
+                    <h3 style="color: #223142; margin-bottom: 1rem;">ГОСТ 25054-81 - Поковки из цветных металлов и сплавов</h3>
+                    <p style="color: #666; margin-bottom: 2rem;">Общие технические условия</p>
+                    <div style="background: #f8f9fa; border: 2px solid #ddd; border-radius: 8px; padding: 3rem; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                        <div style="font-size: 4rem; margin-bottom: 1rem;">📄</div>
+                        <h4 style="color: #223142; margin-bottom: 1rem;">ГОСТ 25054-81</h4>
+                        <p style="color: #666; margin-bottom: 2rem;">Поковки из цветных металлов и сплавов. Общие технические условия</p>
+                        <a href="file:///C:/Users/PC/Downloads/gost-25054-81.pdf" 
+                           target="_blank" 
+                           style="background: #223142; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block; transition: background 0.2s;"
+                           onmouseover="this.style.background='#1a2732'"
+                           onmouseout="this.style.background='#223142'">
+                            Открыть ГОСТ 25054-81 в новом окне
+                        </a>
+                        <div style="margin-top: 1rem; color: #888; font-size: 0.9rem;">
+                            <p>PDF файл откроется в новой вкладке браузера</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <button class="accordion-btn" data-acc="gost977-88">ГОСТ 977-88</button>
+            <div class="accordion-content" id="gost977-88-content">
+                <div style="text-align: center; padding: 2rem;">
+                    <h3 style="color: #223142; margin-bottom: 1rem;">ГОСТ 977-88 - Отливки стальные</h3>
+                    <p style="color: #666; margin-bottom: 2rem;">Общие технические условия</p>
+                    <div style="background: #f8f9fa; border: 2px solid #ddd; border-radius: 8px; padding: 3rem; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                        <div style="font-size: 4rem; margin-bottom: 1rem;">📄</div>
+                        <h4 style="color: #223142; margin-bottom: 1rem;">ГОСТ 977-88</h4>
+                        <p style="color: #666; margin-bottom: 2rem;">Отливки стальные. Общие технические условия</p>
+                        <a href="file:///C:/Users/PC/Downloads/4053edb11cd901beb2c5d0e53c88dc4c.pdf" 
+                           target="_blank" 
+                           style="background: #223142; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block; transition: background 0.2s;"
+                           onmouseover="this.style.background='#1a2732'"
+                           onmouseover="this.style.background='#1a2732'"
+                           onmouseout="this.style.background='#223142'">
+                            Открыть ГОСТ 977-88 в новом окне
+                        </a>
+                        <div style="margin-top: 1rem; color: #888; font-size: 0.9rem;">
+                            <p>PDF файл откроется в новой вкладке браузера</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Общая таблица всех расчетов - видна на всех вкладках -->
+    <div id="global-results" style="margin: 2em auto; max-width: 950px; padding: 0;">
+        <div style="background: #fff; border-radius: 8px; box-shadow: 0 2px 8px rgba(34,49,66,0.07); padding: 0 32px 2em 32px; max-width: 950px; margin: 0 auto;">
+            <h3 style="color: #223142; margin-bottom: 1rem; text-align: center; padding-top: 1.5rem;">Общая таблица всех расчетов</h3>
+            <div id="all-results" style="width:100%;"></div>
+        </div>
+    </div>
+    <script>
+        // Общий массив для всех расчетов (поковки, отливки, готовые изделия)
+        window.allResults = window.allResults || [];
+
+        function renderAllResults() {
+            const container = document.getElementById('all-results');
+            if (!container) return;
+            if (window.allResults.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #888; font-style: italic; padding: 2rem;">Нет добавленных расчетов</p>';
+                return;
+            }
+            let table = `<table class="calc-table" style="border-collapse:collapse; margin-top:1em; width:100%; font-size:1em;">
+                <tr style="background:#f5f5f5;">
+                    <th style="border:1px solid #ccc; padding:4px;">№</th>
+                    <th style="border:1px solid #ccc; padding:4px;">Тип изделия</th>
+                    <th style="border:1px solid #ccc; padding:4px;">Чист. р-ры</th>
+                    <th style="border:1px solid #ccc; padding:4px;">Поставочные р-ры</th>
+                    <th style="border:1px solid #ccc; padding:4px;">Материал</th>
+                    <th style="border:1px solid #ccc; padding:4px;">Вес, кг</th>
+                    <th style="border:1px solid #ccc; padding:4px;">Кол-во</th>
+                    <th style="border:1px solid #ccc; padding:4px;">Стоимость без наценки, руб</th>
+                    <th style="border:1px solid #ccc; padding:4px;">Стоимость с наценкой, руб</th>
+                    <th style="border:1px solid #ccc; padding:4px;"></th>
+                </tr>`;
+            window.allResults.forEach((row, i) => {
+                const isCasting = row.type && row.type.toLowerCase().includes('отлив');
+                table += `<tr>
+                    <td style="border:1px solid #ccc; padding:4px; text-align:center;">${i+1}</td>
+                    <td style="border:1px solid #ccc; padding:4px;">${row.type}</td>
+                    <td style="border:1px solid #ccc; padding:4px;">${isCasting ? '-' : (row.clean || '-')}</td>
+                    <td style="border:1px solid #ccc; padding:4px;">${isCasting ? '-' : (row.supply || '-')}</td>
+                    <td style="border:1px solid #ccc; padding:4px;">${row.material || row.steelGrade || '-'}</td>
+                    <td style="border:1px solid #ccc; padding:4px;">${row.mass}</td>
+                    <td style="border:1px solid #ccc; padding:4px;">${row.quantity}</td>
+                    <td style="border:1px solid #ccc; padding:4px;">${row.basePrice}</td>
+                    <td style="border:1px solid #ccc; padding:4px; font-weight:bold;">${row.finalPrice}</td>
+                    <td style="border:1px solid #ccc; padding:4px; text-align:center;"><button onclick="deleteResult(${i})" style="background:none;border:none;color:#b00;cursor:pointer;font-size:1.1em;" title="Удалить">🗑</button></td>
+                </tr>`;
+            });
+            table += '</table>';
+            container.innerHTML = table;
+            
+            // Обновляем также таблицу позиций в КП
+            updateKPPositions();
+        }
+        
+        window.deleteResult = function(idx) {
+            window.allResults.splice(idx, 1);
+            renderAllResults();
+            updateKPPositions();
+        }
+        
+        // Функция обновления таблицы позиций в КП
+        function updateKPPositions() {
+            const kpTable = document.querySelector('#kp-positions-table table');
+            if (!kpTable || !window.allResults) return;
+            
+            // Очищаем таблицу, оставляя заголовки
+            const tbody = kpTable.querySelector('tbody');
+            if (tbody) {
+                tbody.remove();
+            }
+            
+            if (window.allResults.length === 0) {
+                return;
+            }
+            
+            // Создаем новое тело таблицы
+            const newTbody = document.createElement('tbody');
+            
+            window.allResults.forEach((item, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td style="border:1px solid #ccc; padding:8px; text-align:center;">${index + 1}</td>
+                    <td style="border:1px solid #ccc; padding:8px;">${item.type}</td>
+                    <td style="border:1px solid #ccc; padding:8px;">${item.clean || '-'}</td>
+                    <td style="border:1px solid #ccc; padding:8px;">${item.supply || '-'}</td>
+                    <td style="border:1px solid #ccc; padding:8px;">${item.material || item.steelGrade || '-'}</td>
+                    <td style="border:1px solid #ccc; padding:8px;">${item.mass}</td>
+                    <td style="border:1px solid #ccc; padding:8px;">${item.quantity}</td>
+                    <td style="border:1px solid #ccc; padding:8px;">${item.basePrice}</td>
+                    <td style="border:1px solid #ccc; padding:8px; font-weight:bold;">${item.finalPrice}</td>
+                    <td style="border:1px solid #ccc; padding:8px; text-align:center;">
+                        <button onclick="deleteKPPosition(${index})" style="background:none;border:none;color:#b00;cursor:pointer;font-size:1.1em;" title="Удалить">🗑</button>
+                    </td>
+                `;
+                newTbody.appendChild(row);
+            });
+            
+            kpTable.appendChild(newTbody);
+        }
+        
+        // Функция удаления позиции из КП
+        window.deleteKPPosition = function(idx) {
+            window.allResults.splice(idx, 1);
+            renderAllResults();
+            updateKPPositions();
+        }
+        
+        // Обработка загрузки логотипа
+        document.addEventListener('DOMContentLoaded', function() {
+            // Инициализируем общую таблицу результатов
+            renderAllResults();
+            
+            const logoUpload = document.getElementById('logo-upload');
+            const logoContainer = document.getElementById('logo-container');
+            
+            if (logoUpload && logoContainer) {
+                logoUpload.addEventListener('change', function(e) {
+                    const file = e.target.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            logoContainer.innerHTML = `<img src="${e.target.result}" style="max-width: 100%; max-height: 100%; object-fit: contain;">`;
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
+            }
+            
+            // Обработка кнопки "Создать КП (Word)"
+            const createKpBtn = document.getElementById('create-kp-btn');
+            if (createKpBtn) {
+                createKpBtn.addEventListener('click', function() {
+                    if (window.allResults && window.allResults.length > 0) {
+                        createWordDocument();
+                    } else {
+                        alert('Добавьте позиции в таблицу перед созданием КП');
+                    }
+                });
+            }
+            
+            // Добавляем обработчики для отслеживания изменений в форме КП
+            document.addEventListener('DOMContentLoaded', function() {
+                const kpSection = document.getElementById('kp');
+                if (kpSection) {
+                    const kpInputs = kpSection.querySelectorAll('input, select, textarea');
+                    kpInputs.forEach(input => {
+                        input.addEventListener('change', function() {
+                            console.log('KP input changed:', this.placeholder || this.name || this.id, '=', this.value);
+                        });
+                        input.addEventListener('input', function() {
+                            console.log('KP input typing:', this.placeholder || this.name || this.id, '=', this.value);
+                        });
+                    });
+                }
+            });
+            
+            // Функция создания документа Word
+            function createWordDocument() {
+                // Проверяем, есть ли данные для КП
+                if (!window.allResults || window.allResults.length === 0) {
+                    alert('Добавьте позиции в таблицу перед созданием КП');
+                    return;
+                }
+                
+                // Получаем данные из формы настроек КП
+                const kpSection = document.getElementById('kp');
+                const kpNumberInput = kpSection?.querySelector('input[placeholder="Например, 2266"]');
+                const recipientCompanyInput = kpSection?.querySelector('input[placeholder="Название компании-получателя"]');
+                const validUntilInput = kpSection?.querySelector('input[type="date"]');
+                const productionTimeInputs = kpSection?.querySelectorAll('input[type="number"]') || [];
+                // Ищем правильные select элементы
+                const allSelects = kpSection?.querySelectorAll('select') || [];
+                const timeUnitSelect = allSelects[0]; // Первый select - единицы времени
+                const paymentTermsSelect = allSelects[1]; // Второй select - условия оплаты
+                const directorInput = kpSection?.querySelector('input[value="Бостриков В.С."]');
+                const additionalTextarea = kpSection?.querySelector('textarea[placeholder="Введите дополнительную информацию"]');
+                
+                const kpNumber = kpNumberInput?.value || '2266';
+                const recipientCompany = recipientCompanyInput?.value || 'ООО';
+                const validUntil = validUntilInput?.value || '2025-08-27';
+                const productionTime = productionTimeInputs[0]?.value || '2';
+                const productionTime2 = productionTimeInputs[1]?.value || '4';
+                const timeUnit = timeUnitSelect?.options[timeUnitSelect.selectedIndex]?.text || 'календарных';
+                const paymentTerms = paymentTermsSelect?.options[paymentTermsSelect.selectedIndex]?.text || '50% предоплата, 50% доплата по письму о готовности';
+                const director = directorInput?.value || 'Бостриков В.С.';
+                const additional = additionalTextarea?.value || '';
+                
+                // Получаем логотип
+                const logoContainer = document.getElementById('logo-container');
+                const logoImg = logoContainer.querySelector('img');
+                const logoDataUrl = logoImg ? logoImg.src : '';
+                
+                // Форматируем даты
+                const currentDate = new Date().toLocaleDateString('ru-RU');
+                const validUntilFormatted = validUntil ? new Date(validUntil).toLocaleDateString('ru-RU') : '';
+                
+                // Отладочная информация
+                console.log('KP Data:', {
+                    kpNumber,
+                    recipientCompany,
+                    validUntil,
+                    productionTime,
+                    productionTime2,
+                    paymentTerms,
+                    director,
+                    additional
+                });
+                console.log('Found elements:', {
+                    kpNumberInput: !!kpNumberInput,
+                    recipientCompanyInput: !!recipientCompanyInput,
+                    validUntilInput: !!validUntilInput,
+                    productionTimeInputs: productionTimeInputs.length,
+                    paymentTermsSelect: !!paymentTermsSelect,
+                    directorInput: !!directorInput,
+                    additionalTextarea: !!additionalTextarea
+                });
+                console.log('Element values:', {
+                    kpNumberInputValue: kpNumberInput?.value,
+                    recipientCompanyInputValue: recipientCompanyInput?.value,
+                    validUntilInputValue: validUntilInput?.value,
+                    productionTimeInputsValues: Array.from(productionTimeInputs).map(input => input.value),
+                    allSelectsCount: allSelects.length,
+                    timeUnitSelectValue: timeUnitSelect?.options[timeUnitSelect.selectedIndex]?.text,
+                    paymentTermsSelectValue: paymentTermsSelect?.options[paymentTermsSelect.selectedIndex]?.text,
+                    timeUnitValue: timeUnit,
+                    paymentTermsValue: paymentTerms,
+                    directorInputValue: directorInput?.value,
+                    additionalTextareaValue: additionalTextarea?.value
+                });
+                
+                // Рассчитываем итоги
+                const totalCost = window.allResults.reduce((sum, item) => sum + parseFloat(item.finalPrice), 0);
+                const vat = totalCost * 0.20;
+                const totalWithVat = totalCost + vat;
+                
+                // Формируем HTML для Word
+                let htmlContent = `
+                    <html xmlns:o='urn:schemas-microsoft-com:office:office' 
+                          xmlns:w='urn:schemas-microsoft-com:office:word' 
+                          xmlns='http://www.w3.org/TR/REC-html40'>
+                    <head>
+                        <meta charset="utf-8">
+                        <title>Коммерческое предложение</title>
+                        <style>
+                        @page { size: A4 portrait; margin: 1.2cm 1.2cm 1.2cm 1.2cm; }
+                        body { font-family: 'Times New Roman', Times, serif; margin: 0; font-size: 12pt; }
+                        .header-table { width: 100%; border-collapse: collapse; margin-bottom: 0; }
+                        .header-table td { vertical-align: top; border: none; padding: 0; }
+                        .logo { width: 3.26cm; height: 2.1cm; max-width: 3.26cm; max-height: 2.1cm; display: block; }
+                        .company-details { font-family: Calibri, Arial, sans-serif; font-size: 9pt; line-height: 1.3; text-align: left; height:2.1cm; }
+                        .kptable, .kptable th, .kptable td { font-size: 11pt !important; border: 1px solid #222 !important; border-collapse: collapse; }
+                        .header-line { border-bottom: 3px solid #222; width: 100%; height: 0; margin: 0; padding: 0; }
+                        .recipient { text-align: right; font-size: 12pt; }
+                        h1 { color: #222; text-align: center; margin: 18px 0 12px 0; font-size: 14pt; font-weight: bold; font-family: 'Times New Roman', Times, serif; }
+                        .doc-date { text-align:right; font-size:11pt; margin-bottom:6px; }
+                        .footer { margin-top: 10px; font-size: 12pt; line-height: 1.5; }
+                        .footer p { margin:0; padding:0; font-size:12pt; }
+                        .signature-table { width: 100%; border: none; margin-top: 36px; font-size: 12pt; }
+                        .signature-table td { border: none; padding: 0; }
+                        .sign-left { text-align: left; }
+                        .sign-right { text-align: right; min-width: 220px; }
+                        </style>
+                    </head>
+                    <body>
+                    <table class="header-table" style="margin:0; padding:0; border-spacing:0; border-collapse:collapse;">
+                        <tr>
+                            <td style="width:3.26cm; vertical-align:middle; padding-right: 18px;">
+                                <img src="${logoDataUrl}" alt="Логотип" class="logo">
+                            </td>
+                            <td style="vertical-align:top; width:100%; height:2.1cm;">
+                                <div class="company-details" style="height:2.1cm; display:flex; align-items:flex-start;">Общество с ограниченной ответственностью «ИжПромСталь»<br>ИНН 1800017485, КПП180001001<br>Юр. адрес: 426039, Удмуртская Республика, г. Ижевск, Воткинское шоссе, зд. 168, офис 335<br>Факт. адрес: 426000 Удмуртская Республик, г. Ижевск, ул. Максима Горького, 157 офис 1<br>ПАО «Сбербанк», р/с 40702810668000037735, к/с 30101810400000000601<br>БИК 049401601, e-mail: info@izhsteel.ru<br>Сайт: www.izhsteel.ru</div>
+                            </td>
+                        </tr>
+                    </table>
+                    <!-- Жирная линия сразу под шапкой, без отступа -->
+                    <table style="width:100%; border-collapse:collapse; margin:0; padding:0; border-spacing:0;"><tr><td style="border-bottom:3px solid #222; height:0; padding:0; margin:0; line-height:0; font-size:0;">&nbsp;</td></tr></table>
+                    <!-- Один отступ после линии -->
+                    <table style="width:100%; border:none; border-collapse:collapse;"><tr><td style="height:14px; border:none;"></td></tr></table>
+                    <!-- Руководителю ... -->
+                    <table style="width:100%; border:none; border-collapse:collapse;"><tr><td style="text-align:right; font-size:12pt; border:none;">Руководителю ${recipientCompany || '...'} </td></tr></table>
+                    <!-- Два отступа после 'Руководителю' -->
+                    <table style="width:100%; border:none; border-collapse:collapse;"><tr><td style="height:12px; border:none;"></td></tr><tr><td style="height:12px; border:none;"></td></tr></table>
+                    <!-- Коммерческое предложение -->
+                    <table style="width:100%; border:none; border-collapse:collapse;"><tr><td style="text-align:center; border:none; font-weight:bold; font-size:14pt; font-family:'Times New Roman', Times, serif;">Коммерческое предложение${kpNumber ? ' № ' + kpNumber : ''} от ${currentDate}</td></tr></table>
+                    <table class="kptable">
+                            <tr>
+                                <th>№</th>
+                            <th>Наименование</th>
+                            <th>Кол-во, шт</th>
+                            <th>Цена, руб/шт (без НДС)</th>
+                            <th>Стоимость (без НДС)</th>
+                            </tr>
+                `;
+                
+                // Добавляем строки таблицы
+                window.allResults.forEach((item, index) => {
+                    const pricePerUnit = (parseFloat(item.finalPrice) / item.quantity).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+                    
+                    // Формируем правильное название позиции
+                    const groupText = item.group ? ` гр. ${item.group}` : '';
+                    const uzkText = item.uzk ? ` с УЗК гр. ${item.uzkGroup || '2'}` : '';
+                    const steelText = item.steelGrade ? `, Сталь: ${item.steelGrade}` : '';
+                    
+                    // Форматируем размеры с символом диаметра
+                    let cleanDimensions = '';
+                    let supplyDimensions = '';
+                    
+                    if (item.clean) {
+                        // Заменяем D= на ⌀ и добавляем х между размерами
+                        cleanDimensions = item.clean.replace(/D=(\d+)\s*мм,\s*L=(\d+)\s*мм/g, '⌀ $1 х $2мм')
+                                                   .replace(/H=(\d+)\s*мм,\s*B=(\d+)\s*мм,\s*L=(\d+)\s*мм/g, '$1 х $2 х $3мм')
+                                                   .replace(/D=(\d+)\s*мм,\s*d=(\d+)\s*мм,\s*L=(\d+)\s*мм/g, '⌀ $1 х $2 х $3мм')
+                                                   .replace(/D=(\d+)\s*мм,\s*d=(\d+)\s*мм,\s*H=(\d+)\s*мм/g, '⌀ $1 х $2 х $3мм');
+                    }
+                    
+                    if (item.supply) {
+                        // Заменяем D= на ⌀ и добавляем х между размерами
+                        supplyDimensions = item.supply.replace(/D=(\d+)\s*мм,\s*L=(\d+)\s*мм/g, '⌀ $1 х $2мм')
+                                                     .replace(/H=(\d+)\s*мм,\s*B=(\d+)\s*мм,\s*L=(\d+)\s*мм/g, '$1 х $2 х $3мм')
+                                                     .replace(/D=(\d+)\s*мм,\s*d=(\d+)\s*мм,\s*L=(\d+)\s*мм/g, '⌀ $1 х $2 х $3мм')
+                                                     .replace(/D=(\d+)\s*мм,\s*d=(\d+)\s*мм,\s*H=(\d+)\s*мм/g, '⌀ $1 х $2 х $3мм');
+                    }
+                    
+                    const cleanText = cleanDimensions ? `, чистовой размер: ${cleanDimensions}` : '';
+                    const supplyText = supplyDimensions ? `, заготовка: ${supplyDimensions}` : '';
+                    
+                    // Определяем тип изделия и формируем название
+                    let positionName;
+                    if (item.type.includes('Поковка')) {
+                        positionName = `Поковка${groupText} по ГОСТ 8479-70${uzkText}${steelText}${cleanText}${supplyText}`;
+                    } else if (item.type.includes('Отливка')) {
+                        positionName = item.type; // Используем готовое название из типа
+                    } else {
+                        positionName = item.type; // Для других типов изделий
+                    }
+                    
+                    htmlContent += `
+                        <tr>
+                            <td class="td-num" style="text-align:center;">${index + 1}</td>
+                            <td style="text-align:left;">${positionName}</td>
+                            <td class="td-qty" style="text-align:center;">${item.quantity}</td>
+                            <td class="td-price" style="text-align:center;">${pricePerUnit}</td>
+                            <td class="td-sum" style="text-align:center;">${parseFloat(item.finalPrice).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ' ')}</td>
+                        </tr>
+                    `;
+                });
+                
+                htmlContent += `
+                    </table>
+                    <table style="width:100%; border:none; margin-top:0; font-family:'Times New Roman', Times, serif; font-size:11pt;">
+                        <tr><td style="border:none; text-align:right; font-weight:bold;">Итого без НДС: ${totalCost.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ' ')}</td></tr>
+                        <tr><td style="border:none; text-align:right; font-weight:bold;">НДС: ${vat.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ' ')}</td></tr>
+                        <tr><td style="border:none; text-align:right; font-weight:bold;">Всего к оплате с НДС: ${totalWithVat.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ' ')}</td></tr>
+                    </table>
+                    <table style="width:100%; border:none; border-collapse:collapse;">
+                      <tr>
+                        <td style="font-size:12pt; font-family:'Times New Roman', Times, serif; padding:0; line-height:1.5;">
+                          <p style="margin:0; line-height:1.5;">Коммерческое предложение действительно до <b>${validUntilFormatted}</b></p>
+                          <p style="margin:0; line-height:1.5;">Продукция поставляется с сертификатом качества</p>
+                          <p style="margin:0; line-height:1.5;">Срок изготовления: ${productionTime} - ${productionTime2} ${timeUnit} дней</p>
+                          <p style="margin:0; line-height:1.5;">Условия оплаты: ${paymentTerms}</p>
+                          ${additional ? `<p style="margin:0; line-height:1.5;">${additional}</p>` : ''}
+                        </td>
+                      </tr>
+                    </table>
+                    <table style='width:100%; border:none; border-collapse:collapse;'><tr><td style='height:72px; border:none;'></td></tr></table>
+                    <table class="signature-table">
+                        <tr>
+                            <td class="sign-left" style="width:50%;">Генеральный директор</td>
+                            <td class="sign-right" style="width:50%;">${director}</td>
+                        </tr>
+                    </table>
+                </body></html>`;
+                
+                // Создаем Blob и ссылку для скачивания
+                const blob = new Blob([htmlContent], {type: 'application/msword'});
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = `КП_${kpNumber ? kpNumber + '_' : ''}ООО_ИжПромСталь_${new Date().toISOString().slice(0, 10)}.doc`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+            
+            // Обработка кнопки "Экспорт в Excel"
+            const exportExcelBtn = document.getElementById('export-excel-btn');
+            if (exportExcelBtn) {
+                exportExcelBtn.addEventListener('click', function() {
+                    if (window.allResults && window.allResults.length > 0) {
+                        // Создаем данные для Excel в требуемом формате
+                        const headers = ['№ позиции', 'Тип изделия', 'Чист р-ры', 'Поставочные р-ры', 'марка стали', 'вес', 'вес поставочный', 'кол-во', 'стоимость за кг', 'наценка в %', 'итоговая стоимость'];
+                        const data = [];
+                        
+                        window.allResults.forEach((item, index) => {
+                            // Вычисляем стоимость за кг
+                            const costPerKg = item.mass > 0 ? (parseFloat(item.basePrice) / parseFloat(item.mass)).toFixed(2) : '0';
+                            // Вычисляем наценку в процентах
+                            const markupPercent = item.basePrice > 0 ? (((parseFloat(item.finalPrice) - parseFloat(item.basePrice)) / parseFloat(item.basePrice)) * 100).toFixed(1) : '0';
+                            // Определяем поставочный вес (если есть supply, иначе используем обычный вес)
+                            const supplyWeight = item.supply && item.supply !== '-' ? item.supply : item.mass;
+                            
+                            data.push([
+                                index + 1,
+                                item.type,
+                                item.clean || '-',
+                                item.supply || '-',
+                                item.material || item.steelGrade || '-',
+                                parseFloat(item.mass),
+                                parseFloat(supplyWeight),
+                                parseInt(item.quantity),
+                                parseFloat(costPerKg),
+                                parseFloat(markupPercent),
+                                parseFloat(item.finalPrice)
+                            ]);
+                        });
+                        
+                        // Создаем рабочую книгу Excel
+                        const wb = XLSX.utils.book_new();
+                        const ws = XLSX.utils.aoa_to_sheet([headers, ...data]);
+                        
+                        // Настраиваем ширину столбцов
+                        const colWidths = [
+                            { wch: 8 },   // № позиции
+                            { wch: 30 },  // Вид поковки
+                            { wch: 15 },  // Чист р-ры
+                            { wch: 20 },  // Поставочные р-ры
+                            { wch: 15 },  // марка стали
+                            { wch: 10 },  // вес
+                            { wch: 15 },  // вес поставочный
+                            { wch: 8 },   // кол-во
+                            { wch: 15 },  // стоимость за кг
+                            { wch: 12 },  // наценка в %
+                            { wch: 15 }   // итоговая стоимость
+                        ];
+                        ws['!cols'] = colWidths;
+                        
+                        // Добавляем лист в книгу
+                        XLSX.utils.book_append_sheet(wb, ws, 'Коммерческое предложение');
+                        
+                        // Создаем и скачиваем файл
+                        const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+                        const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+                        const link = document.createElement('a');
+                        const url = URL.createObjectURL(blob);
+                        link.setAttribute('href', url);
+                        link.setAttribute('download', 'коммерческое_предложение.xlsx');
+                        link.style.visibility = 'hidden';
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                    } else {
+                        alert('Добавьте позиции в таблицу перед экспортом');
+                    }
+                });
+            }
+        });
+        
+        // Переключение вкладок
+        const tabs = document.querySelectorAll('.tab');
+        const tabContents = document.querySelectorAll('.tab-content');
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                tabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                tabContents.forEach(tc => tc.classList.remove('active'));
+                document.getElementById(tab.dataset.tab).classList.add('active');
+            });
+        });
+        // Аккордеоны
+        const accBtns = document.querySelectorAll('.accordion-btn');
+        accBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const content = document.getElementById(btn.dataset.acc + '-content');
+                const isActive = btn.classList.contains('active');
+                
+                // Сворачиваем все
+                accBtns.forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.accordion-content').forEach(c => c.classList.remove('active'));
+                
+                // Если нажатый элемент был неактивен, то открываем его
+                if (!isActive) {
+                btn.classList.add('active');
+                if(content) content.classList.add('active');
+                }
+                // Если нажатый элемент был активен, то он уже свернут (ничего не делаем)
+            });
+        });
+        // УЗК: показывать выбор группы (универсально для inline)
+        document.querySelectorAll('.input-form input[name="uzk"]').forEach(chk => {
+            chk.addEventListener('change', function() {
+                const uzkGroupInline = this.closest('label').querySelector('.uzk-group-inline');
+                if(uzkGroupInline) {
+                    uzkGroupInline.style.display = this.checked ? 'inline-block' : 'none';
+                }
+            });
+            // Инициализация при загрузке
+            const uzkGroupInline = chk.closest('label').querySelector('.uzk-group-inline');
+            if(uzkGroupInline) {
+                uzkGroupInline.style.display = chk.checked ? 'inline-block' : 'none';
+            }
+        });
+        // Калькулятор прямоугольной поковки
+        (function() {
+            const form = document.getElementById('pryam-form');
+            if (!form) return;
+            const resultDiv = document.getElementById('pryam-result');
+            form.querySelector('input[name="uzk"]').addEventListener('change', function() {
+                const uzkGroupRow = form.querySelector('.uzk-group-row');
+                if(uzkGroupRow) {
+                    uzkGroupRow.style.display = this.checked ? 'block' : 'none';
+                }
+            });
+            form.querySelector('#pryam-calc-btn').addEventListener('click', function() {
+                const H = parseFloat(form.height.value);
+                const B = parseFloat(form.width.value);
+                const L = parseFloat(form.length.value);
+                const group = form.group.value;
+                const steelGrade = form['steel-grade'].value;
+                const markup = parseFloat(form.markup.value) || 0;
+                const uzk = form.querySelector('input[name="uzk"]').checked;
+                const uzkGroup = form.querySelector('select[name="uzk-group"]')?.value || '2';
+                const mech = form.querySelector('input[name="mech"]').checked;
+                
+                let errors = [];
+                
+                // Валидация по ГОСТ 8479-70
+                if (isNaN(H) || H < 150 || H > 1100) errors.push('H вне диапазона 150–1100 мм');
+                if (isNaN(B) || B < 150 || B > 1300) errors.push('B вне диапазона 150–1300 мм');
+                if (isNaN(L) || L < 1 || L > 12000) errors.push('L вне диапазона 1–12000 мм');
+                if (L < 1.5 * B) errors.push('L < 1.5 × B (нарушение допуска)');
+                if (L > 30 * H) errors.push('L > 30 × H (нарушение допуска)');
+                if (B < H) errors.push('B < H (нарушение допуска)');
+                if (B > 2 * H) errors.push('B > 2 × H (нарушение допуска)');
+                
+                if (errors.length) {
+                    resultDiv.innerHTML = '<span style="color:#b00">' + errors.join('<br>') + '</span>';
+                    return;
+                }
+                
+                // Поставочные размеры (чистовые + припуск 30мм)
+                const H_supply = H + 30;
+                const B_supply = B + 30;
+                const L_supply = L + 30;
+                
+                // Расчет массы по формуле ГОСТ: H × B × L × 7.85 × 10⁻⁶
+                const mass = H_supply * B_supply * L_supply * 7.85e-6;
+                
+                // Расчет стоимости
+                let steelPricePerKg = 80; // Базовая цена стали за кг
+                let basePrice = mass * steelPricePerKg;
+                let finalPrice = basePrice;
+                
+                // Доплаты по группам
+                switch(group) {
+                    case 'I':
+                    case 'II':
+                        // Без доплаты
+                        break;
+                    case 'III':
+                        finalPrice += mass * 50; // +50 руб за кг
+                        break;
+                    case 'IV':
+                        finalPrice += finalPrice * 0.1; // +10% наценка
+                        break;
+                    case 'V':
+                        finalPrice += finalPrice * 0.2; // +20% наценка
+                        break;
+                }
+                
+                // УЗК +70%
+                if (uzk) {
+                    finalPrice += finalPrice * 0.7;
+                }
+                
+                // Дополнительная наценка
+                if (markup > 0) {
+                    finalPrice += finalPrice * (markup / 100);
+                }
+                
+                // Показываем сообщение об успешном добавлении
+                resultDiv.innerHTML = '<div style="color: green; margin-top: 1em; font-weight: bold;">✓ Расчет добавлен в общую таблицу</div>';
+                
+                // Добавить в общий массив и обновить общую таблицу
+                window.allResults.push({
+                    type: `Поковка прямоугольного сечения гр. ${group} ГОСТ 8479-70${uzk ? ` с УЗК гр. ${uzkGroup}` : ''}`,
+                    clean: `H=${H} мм, B=${B} мм, L=${L} мм`,
+                    supply: `H=${H_supply} мм, B=${B_supply} мм, L=${L_supply} мм`,
+                    steelGrade: steelGrade,
+                    group: group,
+                    uzk: uzk,
+                    uzkGroup: uzkGroup,
+                    mass: mass.toFixed(2),
+                    quantity: 1,
+                    basePrice: basePrice.toFixed(2),
+                    finalPrice: finalPrice.toFixed(2)
+                });
+                renderAllResults();
+            });
+        })();
+        // Калькулятор круглой поковки
+        (function() {
+            const form = document.getElementById('krug-form');
+            if (!form) return;
+            const resultDiv = document.getElementById('krug-result');
+            form.querySelector('input[name="uzk"]').addEventListener('change', function() {
+                const uzkGroupRow = form.querySelector('.uzk-group-row');
+                if(uzkGroupRow) {
+                    uzkGroupRow.style.display = this.checked ? 'block' : 'none';
+                }
+            });
+            form.querySelector('#krug-calc-btn').addEventListener('click', function() {
+                const D = parseFloat(form.diameter.value);
+                const L = parseFloat(form.length.value);
+                const group = form.group.value;
+                const steelGrade = form['steel-grade'].value;
+                const allowanceL = parseFloat(form.allowanceL.value) || 30;
+                const allowanceD = parseFloat(form.allowanceD.value) || 30;
+                const markup = parseFloat(form.markup.value) || 0;
+                const uzk = form.querySelector('input[name="uzk"]').checked;
+                const uzkGroup = form.querySelector('select[name="uzk-group"]')?.value || '2';
+                const mech = form.querySelector('input[name="mech"]').checked;
+                const quantityInput = form.querySelector('input[name="quantity"]');
+                const quantity = quantityInput ? parseInt(quantityInput.value) : 1;
+
+                let errors = [];
+
+                // Валидация по ГОСТ 8479-70
+                if (isNaN(D) || D < 150 || D > 1100) errors.push('D вне диапазона 150–1100 мм');
+                if (isNaN(L) || L < 1 || L > 12000) errors.push('L вне диапазона 1–12000 мм');
+                if (L < 1.2 * D) errors.push('L < 1.2 × D (нарушение допуска)');
+                if (L > 30 * D) errors.push('L > 30 × D (нарушение допуска)');
+
+                if (errors.length) {
+                    resultDiv.innerHTML = '<span style="color:#b00">' + errors.join('<br>') + '</span>';
+                    return;
+                }
+
+                // Поставочные размеры (чистовые + припуск)
+                const D_supply = D + allowanceD;
+                const L_supply = L + allowanceL;
+
+                // Расчет массы по формуле ГОСТ: D² × L × 6.162 × 10⁻⁶
+                const mass = D_supply * D_supply * L_supply * 6.162e-6;
+
+                // Расчет стоимости
+                let steelPricePerKg = 80; // Базовая цена стали за кг
+                let basePrice = mass * steelPricePerKg;
+                let finalPrice = basePrice;
+
+                // Доплаты по группам
+                switch(group) {
+                    case 'I':
+                    case 'II':
+                        // Без доплаты
+                        break;
+                    case 'III':
+                        finalPrice += mass * 50; // +50 руб за кг
+                        break;
+                    case 'IV':
+                        finalPrice += finalPrice * 0.1; // +10% наценка
+                        break;
+                    case 'V':
+                        finalPrice += finalPrice * 0.2; // +20% наценка
+                        break;
+                }
+
+                // УЗК +70%
+                if (uzk) {
+                    finalPrice += finalPrice * 0.7;
+                }
+
+                // Дополнительная наценка
+                if (markup > 0) {
+                    finalPrice += finalPrice * (markup / 100);
+                }
+
+                // Показываем сообщение об успешном добавлении
+                resultDiv.innerHTML = '<div style="color: green; margin-top: 1em; font-weight: bold;">✓ Расчет добавлен в общую таблицу</div>';
+                
+                // Добавить в общий массив и обновить общую таблицу
+                window.allResults.push({
+                    type: `Поковка круглого сечения гр. ${group} ГОСТ 8479-70${uzk ? ` с УЗК гр. ${uzkGroup}` : ''}`,
+                    clean: `D=${D} мм, L=${L} мм`,
+                    supply: `D=${D_supply} мм, L=${L_supply} мм`,
+                    steelGrade: steelGrade,
+                    group: group,
+                    uzk: uzk,
+                    uzkGroup: uzkGroup,
+                    mass: mass.toFixed(2),
+                    quantity: 1,
+                    basePrice: basePrice.toFixed(2),
+                    finalPrice: finalPrice.toFixed(2)
+                });
+                renderAllResults();
+            });
+        })();
+        // Калькулятор цилиндра с отверстием
+        (function() {
+            const form = document.getElementById('cilindr-form');
+            if (!form) return;
+            const resultDiv = document.getElementById('cilindr-result');
+            form.querySelector('input[name="uzk"]').addEventListener('change', function() {
+                const uzkGroupRow = form.querySelector('.uzk-group-row');
+                if(uzkGroupRow) {
+                    uzkGroupRow.style.display = this.checked ? 'block' : 'none';
+                }
+            });
+            form.querySelector('#cilindr-calc-btn').addEventListener('click', function() {
+                const D = parseFloat(form.diameter.value);
+                const d = parseFloat(form.diameter_inner.value);
+                const L = parseFloat(form.length.value);
+                const group = form.group.value;
+                const steelGrade = form['steel-grade'].value;
+                const markup = parseFloat(form.markup.value) || 0;
+                const uzk = form.querySelector('input[name="uzk"]').checked;
+                const uzkGroup = form.querySelector('select[name="uzk-group"]')?.value || '2';
+                const mech = form.querySelector('input[name="mech"]').checked;
+                
+                let errors = [];
+                if (isNaN(D) || D < 360 || D > 1200) errors.push('D вне диапазона 360–1200 мм');
+                if (isNaN(d) || d < 160 || d > 630) errors.push('d вне диапазона 160–630 мм');
+                if (isNaN(L) || L < 1 || L > 4000) errors.push('L вне диапазона 1–4000 мм');
+                if (errors.length) {
+                    resultDiv.innerHTML = '<span style="color:#b00">' + errors.join('<br>') + '</span>';
+                    return;
+                }
+                
+                // Поставочные размеры (чистовые + припуск 30мм)
+                const D_supply = D + 30;
+                const d_supply = d + 30;
+                const L_supply = L + 30;
+                
+                // Расчет массы цилиндра (π/4 × (D² - d²) × L × плотность)
+                const volume = (Math.PI / 4) * (D_supply * D_supply - d_supply * d_supply) * L_supply;
+                const mass = volume * 7.85e-6; // Плотность стали 7.85 г/см³
+                
+                // Расчет стоимости
+                let steelPricePerKg = 80; // Базовая цена стали за кг
+                let basePrice = mass * steelPricePerKg;
+                let finalPrice = basePrice;
+                
+                // Доплаты по группам
+                switch(group) {
+                    case 'I':
+                    case 'II':
+                        // Без доплаты
+                        break;
+                    case 'III':
+                        finalPrice += mass * 50; // +50 руб за кг
+                        break;
+                    case 'IV':
+                        finalPrice += finalPrice * 0.1; // +10% наценка
+                        break;
+                    case 'V':
+                        finalPrice += finalPrice * 0.2; // +20% наценка
+                        break;
+                }
+                
+                // УЗК +70%
+                if (uzk) {
+                    finalPrice += finalPrice * 0.7;
+                }
+                
+                // Дополнительная наценка
+                if (markup > 0) {
+                    finalPrice += finalPrice * (markup / 100);
+                }
+                
+                let result = `Чистовые размеры: D=${D} мм, d=${d} мм, L=${L} мм<br>`;
+                result += `Поставочные размеры: D=${D_supply} мм, d=${d_supply} мм, L=${L_supply} мм<br>`;
+                result += `Масса поковки: ${mass.toFixed(2)} кг<br>`;
+                result += `Марка стали: ${steelGrade}<br>`;
+                result += `Группа: ${group}<br>`;
+                result += `Базовая стоимость: ${basePrice.toFixed(2)} руб`;
+                
+                if (uzk) result += '<br>УЗК: +70%';
+                if (mech) result += '<br>Мехобработка';
+                
+                result += `<br><b>Итоговая стоимость: ${finalPrice.toFixed(2)} руб</b>`;
+                
+                resultDiv.innerHTML = result;
+                
+                // Добавить в общий массив и обновить общую таблицу
+                window.allResults.push({
+                    type: `Поковка цилиндра гр. ${group} ГОСТ 8479-70${uzk ? ` с УЗК гр. ${uzkGroup}` : ''}`,
+                    clean: `D=${D} мм, d=${d} мм, L=${L} мм`,
+                    supply: `D=${D_supply} мм, d=${d_supply} мм, L=${L_supply} мм`,
+                    steelGrade: steelGrade,
+                    group: group,
+                    uzk: uzk,
+                    uzkGroup: uzkGroup,
+                    mass: mass.toFixed(2),
+                    quantity: 1,
+                    basePrice: basePrice.toFixed(2),
+                    finalPrice: finalPrice.toFixed(2)
+                });
+                renderAllResults();
+                
+                // Показать сообщение об успешном добавлении
+                resultDiv.innerHTML = '<span style="color: #28a745; font-weight: bold;">✓ Расчет добавлен в общую таблицу</span>';
+            });
+        })();
+        // Калькулятор диска
+        (function() {
+            const form = document.getElementById('disk-form');
+            if (!form) return;
+            const resultDiv = document.getElementById('disk-result');
+            form.querySelector('input[name="uzk"]').addEventListener('change', function() {
+                const uzkGroupRow = form.querySelector('.uzk-group-row');
+                if(uzkGroupRow) {
+                    uzkGroupRow.style.display = this.checked ? 'block' : 'none';
+                }
+            });
+            form.querySelector('#disk-calc-btn').addEventListener('click', function() {
+                const D = parseFloat(form.diameter.value);
+                const d = parseFloat(form.diameter_inner.value);
+                const H = parseFloat(form.height.value);
+                const group = form.group.value;
+                const steelGrade = form['steel-grade'].value;
+                const markup = parseFloat(form.markup.value) || 0;
+                const uzk = form.querySelector('input[name="uzk"]').checked;
+                const uzkGroup = form.querySelector('select[name="uzk-group"]')?.value || '2';
+                const mech = form.querySelector('input[name="mech"]').checked;
+                
+                let errors = [];
+                
+                // Валидация по ГОСТ 8479-70
+                if (isNaN(D) || D < 1 || D > 3500) errors.push('D вне диапазона 1–3500 мм');
+                if (isNaN(H) || H < 150 || H > 1100) errors.push('H вне диапазона 150–1100 мм');
+                if (isNaN(d) || d < 0) errors.push('d не может быть меньше 0');
+                if (d > 0 && d > 0.5 * D) errors.push('d > 0.5 × D (нарушение допуска)');
+                if (H < 0.2 * D) errors.push('H < 0.2 × D (нарушение допуска)');
+                if (H > 1.2 * D) errors.push('H > 1.2 × D (нарушение допуска)');
+                if (!(d === 0 || d <= 0.5 * D)) errors.push('d должен быть 0 или ≤ 0.5 × D');
+                
+                if (errors.length) {
+                    resultDiv.innerHTML = '<span style="color:#b00">' + errors.join('<br>') + '</span>';
+                    return;
+                }
+                
+                // Поставочные размеры (чистовые + припуск 30мм)
+                const D_supply = D + 30;
+                const d_supply = d + 30;
+                const H_supply = H + 30;
+                
+                // Расчет массы диска (π/4 × (D² - d²) × H × плотность)
+                const volume = (Math.PI / 4) * (D_supply * D_supply - d_supply * d_supply) * H_supply;
+                const mass = volume * 7.85e-6; // Плотность стали 7.85 г/см³
+                
+                // Расчет стоимости
+                let steelPricePerKg = 80; // Базовая цена стали за кг
+                let basePrice = mass * steelPricePerKg;
+                let finalPrice = basePrice;
+                
+                // Доплаты по группам
+                switch(group) {
+                    case 'I':
+                    case 'II':
+                        // Без доплаты
+                        break;
+                    case 'III':
+                        finalPrice += mass * 50; // +50 руб за кг
+                        break;
+                    case 'IV':
+                        finalPrice += finalPrice * 0.1; // +10% наценка
+                        break;
+                    case 'V':
+                        finalPrice += finalPrice * 0.2; // +20% наценка
+                        break;
+                }
+                
+                // УЗК +70%
+                if (uzk) {
+                    finalPrice += finalPrice * 0.7;
+                }
+                
+                // Дополнительная наценка
+                if (markup > 0) {
+                    finalPrice += finalPrice * (markup / 100);
+                }
+                
+                let result = `Чистовые размеры: D=${D} мм, d=${d} мм, H=${H} мм<br>`;
+                result += `Поставочные размеры: D=${D_supply} мм, d=${d_supply} мм, H=${H_supply} мм<br>`;
+                result += `Масса поковки: ${mass.toFixed(2)} кг<br>`;
+                result += `Марка стали: ${steelGrade}<br>`;
+                result += `Группа: ${group}<br>`;
+                result += `Базовая стоимость: ${basePrice.toFixed(2)} руб`;
+                
+                if (uzk) result += '<br>УЗК: +70%';
+                if (mech) result += '<br>Мехобработка';
+                
+                result += `<br><b>Итоговая стоимость: ${finalPrice.toFixed(2)} руб</b>`;
+                
+                resultDiv.innerHTML = result;
+                
+                // Добавить в общий массив и обновить общую таблицу
+                window.allResults.push({
+                    type: `Поковка диска гр. ${group} ГОСТ 8479-70${uzk ? ` с УЗК гр. ${uzkGroup}` : ''}`,
+                    clean: `D=${D} мм, d=${d} мм, H=${H} мм`,
+                    supply: `D=${D_supply} мм, d=${d_supply} мм, H=${H_supply} мм`,
+                    steelGrade: steelGrade,
+                    group: group,
+                    uzk: uzk,
+                    uzkGroup: uzkGroup,
+                    mass: mass.toFixed(2),
+                    quantity: 1,
+                    basePrice: basePrice.toFixed(2),
+                    finalPrice: finalPrice.toFixed(2)
+                });
+                renderAllResults();
+                
+                // Показать сообщение об успешном добавлении
+                resultDiv.innerHTML = '<span style="color: #28a745; font-weight: bold;">✓ Расчет добавлен в общую таблицу</span>';
+            });
+        })();
+        
+        // Калькулятор ступенчатого вала
+        (function() {
+            const form = document.getElementById('val-form');
+            if (!form) return;
+            const resultDiv = document.getElementById('val-result');
+            const stepCountSelect = document.getElementById('val-step-count');
+            
+            // Находим все поля ступеней
+            const stepFields = form.querySelectorAll('.step-field');
+            const stepLabels = form.querySelectorAll('.step-label');
+            
+            function updateStepFields() {
+                const count = parseInt(stepCountSelect.value);
+                
+                // Скрываем/показываем поля в зависимости от выбранного количества ступеней
+                stepFields.forEach((field) => {
+                    const stepNumber = parseInt(field.getAttribute('data-step'));
+                    field.style.display = (stepNumber <= count) ? 'flex' : 'none';
+                });
+                
+                // Скрываем/показываем заголовки в зависимости от выбранного количества ступеней
+                stepLabels.forEach((label) => {
+                    const stepNumber = parseInt(label.getAttribute('data-step'));
+                    label.style.display = (stepNumber <= count) ? 'flex' : 'none';
+                });
+            }
+            
+            stepCountSelect.addEventListener('change', updateStepFields);
+            updateStepFields(); // Инициализация при загрузке
+            
+            form.querySelector('input[name="uzk"]').addEventListener('change', function() {
+                const uzkGroupRow = form.querySelector('.uzk-group-row');
+                if(uzkGroupRow) {
+                    uzkGroupRow.style.display = this.checked ? 'block' : 'none';
+                }
+            });
+            
+            form.querySelector('#val-calc-btn').addEventListener('click', function() {
+                const group = form.group.value;
+                const steelGrade = form['steel-grade'].value;
+                const allowance = parseFloat(form.allowance.value) || 30;
+                const markup = parseFloat(form.markup.value) || 0;
+                const uzk = form.querySelector('input[name="uzk"]').checked;
+                const uzkGroup = form.querySelector('select[name="uzk-group"]')?.value || '2';
+                const mech = form.querySelector('input[name="mech"]').checked;
+                const stepCount = parseInt(stepCountSelect.value);
+                
+                let totalMass = 0;
+                let errors = [];
+                let stepDetails = [];
+                
+                // Расчет массы для каждой ступени
+                for (let i = 1; i <= stepCount; i++) {
+                    const d = parseFloat(form[`d${i}`].value);
+                    const l = parseFloat(form[`l${i}`].value);
+                    
+                    if (isNaN(d) || isNaN(l)) continue;
+                    
+                    if (d < 150 || d > 1100) {
+                        errors.push(`D${i} вне диапазона 150–1100 мм`);
+                    }
+                    if (l < 1 || l > 12000) {
+                        errors.push(`L${i} вне диапазона 1–12000 мм`);
+                    }
+                    if (l < 1.2 * d) {
+                        errors.push(`L${i} < 1.2 × D${i} (нарушение допуска)`);
+                    }
+                    if (l > 30 * d) {
+                        errors.push(`L${i} > 30 × D${i} (нарушение допуска)`);
+                    }
+                    
+                    // Поставочные размеры (чистовые + припуск)
+                    const d_supply = d + allowance;
+                    const l_supply = l + allowance;
+                    
+                    // Расчет массы ступени по формуле ГОСТ: D² × L × 6.162 × 10⁻⁶
+                    const mass = d_supply * d_supply * l_supply * 6.162e-6;
+                    totalMass += mass;
+                    
+                    stepDetails.push({
+                        step: i,
+                        d: d,
+                        l: l,
+                        d_supply: d_supply,
+                        l_supply: l_supply,
+                        mass: mass
+                    });
+                }
+                
+                if (errors.length) {
+                    resultDiv.innerHTML = '<span style="color:#b00">' + errors.join('<br>') + '</span>';
+                    return;
+                }
+                
+                if (totalMass === 0) {
+                    resultDiv.innerHTML = '<span style="color:#b00">Введите размеры хотя бы одной ступени</span>';
+                    return;
+                }
+                
+                // Расчет стоимости
+                let steelPricePerKg = 80; // Базовая цена стали за кг
+                let basePrice = totalMass * steelPricePerKg;
+                let finalPrice = basePrice;
+                
+                // Доплаты по группам
+                switch(group) {
+                    case 'I':
+                    case 'II':
+                        // Без доплаты
+                        break;
+                    case 'III':
+                        finalPrice += totalMass * 50; // +50 руб за кг
+                        break;
+                    case 'IV':
+                        finalPrice += finalPrice * 0.1; // +10% наценка
+                        break;
+                    case 'V':
+                        finalPrice += finalPrice * 0.2; // +20% наценка
+                        break;
+                }
+                
+                // УЗК +70%
+                if (uzk) {
+                    finalPrice += finalPrice * 0.7;
+                }
+                
+                // Дополнительная наценка
+                if (markup > 0) {
+                    finalPrice += finalPrice * (markup / 100);
+                }
+                
+                // Добавить в общий массив и обновить общую таблицу
+                window.allResults.push({
+                    type: `Поковка ступенчатого вала гр. ${group} ГОСТ 8479-70${uzk ? ` с УЗК гр. ${uzkGroup}` : ''}`,
+                    clean: stepDetails.map(step => `D${step.step}=${step.d} мм, L${step.step}=${step.l} мм`).join(', '),
+                    supply: stepDetails.map(step => `D${step.step}=${step.d_supply} мм, L${step.step}=${step.l_supply} мм`).join(', '),
+                    steelGrade: steelGrade,
+                    group: group,
+                    uzk: uzk,
+                    uzkGroup: uzkGroup,
+                    mass: totalMass.toFixed(2),
+                    quantity: 1,
+                    basePrice: basePrice.toFixed(2),
+                    finalPrice: finalPrice.toFixed(2)
+                });
+                renderAllResults();
+                
+                // Показать сообщение об успешном добавлении
+                resultDiv.innerHTML = '<span style="color: #28a745; font-weight: bold;">✓ Расчет добавлен в общую таблицу</span>';
+            });
+        })();
+        
+        // Калькулятор отливок
+        (function() {
+            const form = document.getElementById('otlivka-form');
+            if (!form) return;
+            const resultDiv = document.getElementById('otlivka-result');
+            const metalTypeSelect = document.getElementById('metal-type');
+            const groupSelect = document.getElementById('group-select');
+            const metalGradeSelect = document.getElementById('metal-grade');
+            
+            // Управление отображением группы в зависимости от выбора металла
+            function updateGroupVisibility() {
+                const metalType = metalTypeSelect.value;
+                const groupLabel = form.querySelector('label:has(select[name="group"])');
+                
+                if (metalType === 'steel') {
+                    groupSelect.style.display = 'block';
+                    groupLabel.style.display = 'block';
+                } else {
+                    groupSelect.style.display = 'none';
+                    groupLabel.style.display = 'none';
+                }
+            }
+            
+            // Управление отображением марок металла в зависимости от выбора типа металла
+            function updateMetalGradeVisibility() {
+                const metalType = metalTypeSelect.value;
+                const options = metalGradeSelect.querySelectorAll('option');
+                
+                options.forEach(option => {
+                    const optionMetalType = option.getAttribute('data-metal');
+                    if (optionMetalType === metalType) {
+                        option.style.display = 'block';
+                    } else {
+                        option.style.display = 'none';
+                    }
+                });
+                
+                // Устанавливаем первую доступную марку как выбранную
+                const availableOptions = Array.from(options).filter(option => 
+                    option.getAttribute('data-metal') === metalType
+                );
+                if (availableOptions.length > 0) {
+                    metalGradeSelect.value = availableOptions[0].value;
+                }
+            }
+            
+            metalTypeSelect.addEventListener('change', function() {
+                updateGroupVisibility();
+                updateMetalGradeVisibility();
+            });
+            
+            updateGroupVisibility(); // Инициализация при загрузке
+            updateMetalGradeVisibility(); // Инициализация при загрузке
+            
+            form.querySelector('#otlivka-calc-btn').addEventListener('click', function() {
+                const metalType = metalTypeSelect.value;
+                const group = groupSelect.value;
+                const metalGrade = metalGradeSelect.value;
+                const drawingName = form.querySelector('input[name="drawing-name"]').value.trim();
+                const weight = parseFloat(form.weight.value);
+                const allowance = parseFloat(form.allowance.value) || 30;
+                const quantity = parseInt(form.quantity.value);
+                const markup = parseFloat(form.markup.value) || 0;
+                const modelEquipment = form.querySelector('input[name="model-equipment"]').checked;
+                
+                let errors = [];
+                
+                // Валидация
+                if (isNaN(weight) || weight < 0.1 || weight > 50000) {
+                    errors.push('Вес должен быть от 0.1 до 50 000 кг');
+                }
+                if (isNaN(quantity) || quantity < 1) {
+                    errors.push('Количество должно быть не менее 1');
+                }
+                if (isNaN(allowance) || allowance < 0 || allowance > 100) {
+                    errors.push('Припуск должен быть от 0 до 100%');
+                }
+                
+                if (errors.length) {
+                    resultDiv.innerHTML = '<span style="color:#b00">' + errors.join('<br>') + '</span>';
+                    return;
+                }
+                
+                // Расчет веса отливки с учетом припуска
+                const castingWeight = weight * (1 + allowance / 100);
+                const totalWeight = castingWeight * quantity;
+                
+                // Расчет стоимости
+                let basePrice = 0;
+                let steelPricePerKg = 80; // Стоимость стали за кг
+                let castIronPricePerKg = 60; // Стоимость чугуна за кг
+                
+                if (metalType === 'steel') {
+                    // Базовая цена для стали: вес отливки × 1.3 × стоимость за кг
+                    basePrice = totalWeight * 1.3 * steelPricePerKg;
+                    
+                    // Доплата в зависимости от группы
+                    switch(group) {
+                        case '1':
+                            // Без доплаты
+                            break;
+                        case '2':
+                            basePrice += 50; // +50 рублей
+                            break;
+                        case '3':
+                            basePrice += 100; // +100 рублей
+                            break;
+                        case '4':
+                            basePrice += 150; // +150 рублей
+                            break;
+                        case '5':
+                            basePrice += 200; // +200 рублей
+                            break;
+                    }
+                } else {
+                    // Базовая цена для чугуна: вес отливки × 1.3 × стоимость за кг
+                    basePrice = totalWeight * 1.3 * castIronPricePerKg;
+                }
+                
+                let finalPrice = basePrice;
+                
+                // Модельная оснастка +30%
+                if (modelEquipment) {
+                    finalPrice += finalPrice * 0.3;
+                }
+                
+                // Дополнительная наценка
+                if (markup > 0) {
+                    finalPrice += finalPrice * (markup / 100);
+                }
+                
+                let result = `Вес изделия: ${weight.toFixed(2)} кг<br>`;
+                result += `Припуск: ${allowance}%<br>`;
+                result += `Вес отливки: ${castingWeight.toFixed(2)} кг<br>`;
+                result += `Общий вес: ${totalWeight.toFixed(2)} кг<br>`;
+                result += `Количество: ${quantity} шт<br>`;
+                result += `Металл: ${metalType === 'steel' ? 'Сталь' : 'Чугун'}`;
+                result += ` (${metalGrade})`;
+                if (metalType === 'steel') {
+                    result += ` (группа ${group})`;
+                }
+                result += `<br>Базовая стоимость: ${basePrice.toFixed(2)} руб`;
+                
+                if (modelEquipment) {
+                    result += '<br>Модельная оснастка: +30%';
+                }
+                
+                resultDiv.innerHTML = '<div style="color: green; margin-top: 1em; font-weight: bold;">✓ Расчет добавлен в общую таблицу</div>';
+                
+                // Формируем название отливки с учетом наименования чертежа
+                const drawingPart = drawingName ? `"${drawingName}"` : '"Корпус"';
+                const metalTypeText = metalType === 'steel' ? 'сталь' : 'чугун';
+                
+                // Добавить в общий массив и обновить общую таблицу
+                window.allResults.push({
+                    type: `Отливка ${drawingPart}, ${metalTypeText} ${metalGrade}, гр. ${group}, ГОСТ 977-88`,
+                    clean: `Вес: ${weight.toFixed(2)} кг`,
+                    supply: `Вес отливки: ${castingWeight.toFixed(2)} кг (припуск ${allowance}%)`,
+                    material: `${metalType === 'steel' ? 'Сталь' : 'Чугун'} ${metalGrade}`,
+                    mass: totalWeight.toFixed(2),
+                    quantity: quantity,
+                    basePrice: basePrice.toFixed(2),
+                    finalPrice: finalPrice.toFixed(2)
+                });
+                renderAllResults();
+            });
+        })();
+        
+        // Калькулятор бронзовой отливки
+        (function() {
+            const form = document.getElementById('bronza-form');
+            if (!form) return;
+            const resultDiv = document.getElementById('bronza-result');
+            
+            form.querySelector('#bronza-calc-btn').addEventListener('click', function() {
+                const outerDiameter = parseFloat(form['outer-diameter'].value);
+                const innerDiameter = parseFloat(form['inner-diameter'].value);
+                const height = parseFloat(form.height.value);
+                const pricePerKg = parseFloat(form['price-per-kg'].value);
+                const quantity = parseInt(form.quantity.value);
+                const markup = parseFloat(form.markup.value) || 0;
+                const modelEquipment = form.querySelector('input[name="model-equipment"]').checked;
+                const drawingName = form['drawing-name'].value.trim();
+                
+                let errors = [];
+                
+                // Валидация
+                if (isNaN(outerDiameter) || outerDiameter <= 0) {
+                    errors.push('Внешний диаметр должен быть больше 0');
+                }
+                if (isNaN(innerDiameter) || innerDiameter < 0) {
+                    errors.push('Внутренний диаметр не может быть отрицательным');
+                }
+                if (isNaN(height) || height <= 0) {
+                    errors.push('Высота должна быть больше 0');
+                }
+                if (isNaN(pricePerKg) || pricePerKg <= 0) {
+                    errors.push('Стоимость за кг должна быть больше 0');
+                }
+                if (isNaN(quantity) || quantity < 1) {
+                    errors.push('Количество должно быть не менее 1');
+                }
+                if (innerDiameter >= outerDiameter) {
+                    errors.push('Внутренний диаметр должен быть меньше внешнего');
+                }
+                
+                if (errors.length) {
+                    resultDiv.innerHTML = '<span style="color:#b00">' + errors.join('<br>') + '</span>';
+                    return;
+                }
+                
+                // Расчет веса по формуле: π/4 × (D² - d²) × L × плотность_бронзы
+                // Плотность бронзы примерно 8.7 г/см³ = 8700 кг/м³
+                const bronzeDensity = 8700; // кг/м³
+                
+                // Чистовые размеры (введенные пользователем)
+                const cleanOuterD = outerDiameter;
+                const cleanInnerD = innerDiameter;
+                const cleanHeight = height;
+                
+                // Поставочные размеры (чистовые + припуск 3мм)
+                const supplyOuterD = outerDiameter + 3;
+                const supplyInnerD = innerDiameter + 3;
+                const supplyHeight = height + 3;
+                
+                // Переводим мм в метры для расчета (используем поставочные размеры)
+                const D = supplyOuterD / 1000;
+                const d = supplyInnerD / 1000;
+                const L = supplyHeight / 1000;
+                
+                // Расчет объема в м³
+                const volume = (Math.PI / 4) * (D * D - d * d) * L;
+                
+                // Расчет веса в кг
+                const weight = volume * bronzeDensity;
+                const totalWeight = weight * quantity;
+                
+                // Расчет стоимости
+                let basePrice = totalWeight * pricePerKg;
+                let finalPrice = basePrice;
+                
+                // Модельная оснастка +30%
+                if (modelEquipment) {
+                    finalPrice += finalPrice * 0.3;
+                }
+                
+                // Дополнительная наценка
+                if (markup > 0) {
+                    finalPrice += finalPrice * (markup / 100);
+                }
+                
+                let result = `Чистовые размеры: D=${cleanOuterD} мм, d=${cleanInnerD} мм, H=${cleanHeight} мм<br>`;
+                result += `Поставочные размеры: D=${supplyOuterD} мм, d=${supplyInnerD} мм, H=${supplyHeight} мм<br>`;
+                result += `Вес одного изделия: ${weight.toFixed(3)} кг<br>`;
+                result += `Общий вес: ${totalWeight.toFixed(3)} кг<br>`;
+                result += `Количество: ${quantity} шт<br>`;
+                result += `Стоимость за кг: ${pricePerKg} руб<br>`;
+                result += `Базовая стоимость: ${basePrice.toFixed(2)} руб`;
+                
+                if (modelEquipment) {
+                    result += `<br>Модельная оснастка: +30%`;
+                }
+                
+                if (markup > 0) {
+                    result += `<br>Наценка: +${markup}%`;
+                }
+                
+                resultDiv.innerHTML = '<div style="color: green; margin-top: 1em; font-weight: bold;">✓ Расчет добавлен в общую таблицу</div>';
+                
+                // Добавить в общий массив и обновить общую таблицу
+                window.allResults.push({
+                    type: `Отливка из бронзы${drawingName ? ` - ${drawingName}` : ''}`,
+                    clean: `D=${cleanOuterD} мм, d=${cleanInnerD} мм, H=${cleanHeight} мм`,
+                    supply: `D=${supplyOuterD} мм, d=${supplyInnerD} мм, H=${supplyHeight} мм`,
+                    material: `Бронза (${pricePerKg} руб/кг)`,
+                    mass: totalWeight.toFixed(3),
+                    quantity: quantity,
+                    basePrice: basePrice.toFixed(2),
+                    finalPrice: finalPrice.toFixed(2)
+                });
+                renderAllResults();
+            });
+        })();
+        
+        // Функция для переключения вкладок и скрытия таблицы на ГОСТ, Справочник цен и КП
+        document.addEventListener('DOMContentLoaded', function() {
+            // ... существующий код ...
+            const tabs = document.querySelectorAll('.tab');
+            const tabContents = document.querySelectorAll('.tab-content');
+            const globalResults = document.getElementById('global-results');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const tabName = tab.getAttribute('data-tab');
+                    // Скрываем таблицу на вкладках ГОСТЫ, Справочник цен и КП
+                    if (tabName === 'gost' || tabName === 'spravka' || tabName === 'kp') {
+                        if (globalResults) globalResults.style.display = 'none';
+                    } else {
+                        if (globalResults) globalResults.style.display = '';
+                    }
+                });
+            });
+            // При загрузке страницы сразу скрыть, если активна ГОСТЫ, Справочник цен или КП
+            const activeTab = document.querySelector('.tab.active');
+            if (activeTab) {
+                const tabName = activeTab.getAttribute('data-tab');
+                if (tabName === 'gost' || tabName === 'spravka' || tabName === 'kp') {
+                    if (globalResults) globalResults.style.display = 'none';
+                }
+            }
+        });
+    </script>
+</body>
+</html>
