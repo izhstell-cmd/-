@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Калькулятор металлоизделий</title>
+    <meta name="description" content="Профессиональный калькулятор для расчета стоимости поковок, отливок и металлоизделий по ГОСТ">
+    <meta name="keywords" content="калькулятор металлоизделий, поковки, отливки, ГОСТ, расчет стоимости">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
+    
+    <!-- Стили -->
+    <link rel="stylesheet" href="css/styles.css">
+    
+    <!-- Внешние библиотеки -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body>
+    <header>Калькулятор металлоизделий</header>
+    
+    <nav>
+        <button class="tab active" data-tab="pokovki">Поковки</button>
+        <button class="tab" data-tab="otlivki">Отливки</button>
+        <button class="tab" data-tab="gotovie">Готовые изделия</button>
+        <button class="tab" data-tab="kp">КП</button>
+        <button class="tab" data-tab="spravka">Справочник цен</button>
+        <button class="tab" data-tab="gost">ГОСТЫ</button>
+    </nav>
+
+    <!-- Контейнер для результатов -->
+    <div id="global-results"></div>
+
+    <!-- Контент вкладок будет загружен через JavaScript -->
+    <div id="tab-container">
+        <!-- Содержимое вкладок -->
+    </div>
+
+    <!-- Скрипты -->
+    <script src="js/utils.js"></script>
+    <script src="js/calculations.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

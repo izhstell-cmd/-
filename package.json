@@ -1,0 +1,33 @@
+{
+  "name": "metal-calculator",
+  "version": "1.0.0",
+  "description": "Профессиональный калькулятор для расчета стоимости поковок, отливок и металлоизделий по ГОСТ",
+  "main": "index.html",
+  "scripts": {
+    "start": "python -m http.server 8000",
+    "serve": "python3 -m http.server 8000",
+    "build": "echo 'Building static site...' && cp -r . dist/",
+    "deploy": "gh-pages -d .",
+    "dev": "live-server --port=8000"
+  },
+  "keywords": [
+    "калькулятор",
+    "металлоизделия",
+    "поковки",
+    "отливки",
+    "ГОСТ",
+    "расчет",
+    "стоимость"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "devDependencies": {
+    "live-server": "^1.2.2",
+    "gh-pages": "^6.1.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/metal-calculator.git"
+  },
+  "homepage": "https://yourusername.github.io/metal-calculator"
+}
