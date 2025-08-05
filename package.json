@@ -1,0 +1,40 @@
+{
+  "name": "taskflow",
+  "version": "1.0.0",
+  "description": "Современный органайзер задач с красивым интерфейсом",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx http-server . -p 3000 -o",
+    "dev": "npx live-server --port=3000 --open=/",
+    "build": "echo 'Сборка не требуется - чистый HTML/CSS/JS'",
+    "test": "echo 'Тесты пока не настроены'",
+    "deploy": "echo 'Деплой на GitHub Pages или другой хостинг'"
+  },
+  "keywords": [
+    "task-manager",
+    "todo",
+    "productivity",
+    "javascript",
+    "pwa",
+    "responsive"
+  ],
+  "author": "TaskFlow Team",
+  "license": "MIT",
+  "devDependencies": {
+    "http-server": "^14.1.1",
+    "live-server": "^1.2.2"
+  },
+  "dependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/username/taskflow.git"
+  },
+  "bugs": {
+    "url": "https://github.com/username/taskflow/issues"
+  },
+  "homepage": "https://username.github.io/taskflow",
+  "engines": {
+    "node": ">=14.0.0",
+    "npm": ">=6.0.0"
+  }
+}
