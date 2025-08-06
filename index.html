@@ -626,6 +626,7 @@
                                 </select>
                             </label>
                             <label>Припуск по L, мм:<br><input type="number" name="allowanceL" min="0" value="30"></label>
+                            <label>Количество, шт:<br><input type="number" name="quantity" min="1" value="1" placeholder="Введите количество"></label>
                             <label>Наценка, %:<br><input type="number" name="markup" min="0" max="100" value="10"></label>
                             <label>Припуск по D, мм:<br><input type="number" name="allowanceD" min="0" value="30"></label>
                             <div class="checkbox-row-center">
@@ -739,6 +740,7 @@
                                 </select>
                             </label>
                             <label>L, мм:<br><input type="number" name="length" min="1" max="12000" value="1000" placeholder="Введите L"></label>
+                            <label>Количество, шт:<br><input type="number" name="quantity" min="1" value="1" placeholder="Введите количество"></label>
                             <label>Наценка, %:<br><input type="number" name="markup" min="0" max="100" value="10"></label>
                             <div class="checkbox-row-center">
                                 <label class="custom-checkbox" style="display: flex; align-items: center; gap: 0.5em;">
@@ -873,6 +875,7 @@
                                 </select>
                             </label>
                             <label>L, мм:<br><input type="number" name="length" min="1" max="4000" value="1000" placeholder="Введите L"></label>
+                            <label>Количество, шт:<br><input type="number" name="quantity" min="1" value="1" placeholder="Введите количество"></label>
                             <label>Наценка, %:<br><input type="number" name="markup" min="0" max="100" value="10"></label>
                             <div class="checkbox-row-center">
                                 <label class="custom-checkbox" style="display: flex; align-items: center; gap: 0.5em;">
@@ -999,6 +1002,7 @@
                                 </select>
                             </label>
                             <label>H, мм:<br><input type="number" name="height" min="150" max="1100" value="200" placeholder="Введите H"></label>
+                            <label>Количество, шт:<br><input type="number" name="quantity" min="1" value="1" placeholder="Введите количество"></label>
                             <label>Наценка, %:<br><input type="number" name="markup" min="0" max="100" value="10"></label>
                             <div class="checkbox-row-center">
                                 <label class="custom-checkbox" style="display: flex; align-items: center; gap: 0.5em;">
@@ -1148,6 +1152,7 @@
                                 </select>
                             </label>
                             <label>Припуск, мм:<br><input type="number" name="allowance" min="0" value="10"></label>
+                            <label>Количество, шт:<br><input type="number" name="quantity" min="1" value="1" placeholder="Введите количество"></label>
                             <label>Наценка, %:<br><input type="number" name="markup" min="0" max="100" value="10"></label>
                         </div>
                         
@@ -2104,6 +2109,8 @@ e-mail: info@izhsteel.ru
                 const uzk = form.querySelector('input[name="uzk"]').checked;
                 const uzkGroup = form.querySelector('select[name="uzk-group"]')?.value || '2';
                 const mech = form.querySelector('input[name="mech"]').checked;
+                const quantityInput = form.querySelector('input[name="quantity"]');
+                const quantity = quantityInput ? parseInt(quantityInput.value) : 1;
                 
                 let errors = [];
                 
@@ -2115,6 +2122,7 @@ e-mail: info@izhsteel.ru
                 if (L > 30 * H) errors.push('L > 30 × H (нарушение допуска)');
                 if (B < H) errors.push('B < H (нарушение допуска)');
                 if (B > 2 * H) errors.push('B > 2 × H (нарушение допуска)');
+                if (isNaN(quantity) || quantity < 1) errors.push('Количество должно быть не менее 1');
                 
                 if (errors.length) {
                     resultDiv.innerHTML = '<span style="color:#b00">' + errors.join('<br>') + '</span>';
@@ -2134,6 +2142,10 @@ e-mail: info@izhsteel.ru
                 let basePrice = mass * steelPricePerKg;
                 let finalPrice = basePrice;
                 
+                // Учитываем количество штук в расчетах
+                const totalMass = mass * quantity;
+                const totalBasePrice = basePrice * quantity;
+                
                 // Доплаты по группам
                 switch(group) {
                     case 'I':
@@ -2141,7 +2153,7 @@ e-mail: info@izhsteel.ru
                         // Без доплаты
                         break;
                     case 'III':
-                        finalPrice += mass * 50; // +50 руб за кг
+                        finalPrice += totalMass * 50; // +50 руб за кг
                         break;
                     case 'IV':
                         finalPrice += finalPrice * 0.1; // +10% наценка
@@ -2161,6 +2173,9 @@ e-mail: info@izhsteel.ru
                     finalPrice += finalPrice * (markup / 100);
                 }
                 
+                // Итоговая стоимость с учетом количества
+                const totalFinalPrice = finalPrice * quantity;
+                
                 // Показываем сообщение об успешном добавлении
                 resultDiv.innerHTML = '<div style="color: green; margin-top: 1em; font-weight: bold;">✓ Расчет добавлен в общую таблицу</div>';
                 
@@ -2173,10 +2188,10 @@ e-mail: info@izhsteel.ru
                     group: group,
                     uzk: uzk,
                     uzkGroup: uzkGroup,
-                    mass: mass.toFixed(2),
-                    quantity: 1,
-                    basePrice: basePrice.toFixed(2),
-                    finalPrice: finalPrice.toFixed(2)
+                    mass: totalMass.toFixed(2),
+                    quantity: quantity,
+                    basePrice: totalBasePrice.toFixed(2),
+                    finalPrice: totalFinalPrice.toFixed(2)
                 });
                 renderAllResults();
             });
@@ -2213,6 +2228,7 @@ e-mail: info@izhsteel.ru
                 if (isNaN(L) || L < 1 || L > 12000) errors.push('L вне диапазона 1–12000 мм');
                 if (L < 1.2 * D) errors.push('L < 1.2 × D (нарушение допуска)');
                 if (L > 30 * D) errors.push('L > 30 × D (нарушение допуска)');
+                if (isNaN(quantity) || quantity < 1) errors.push('Количество должно быть не менее 1');
 
                 if (errors.length) {
                     resultDiv.innerHTML = '<span style="color:#b00">' + errors.join('<br>') + '</span>';
@@ -2230,7 +2246,11 @@ e-mail: info@izhsteel.ru
                 let steelPricePerKg = 80; // Базовая цена стали за кг
                 let basePrice = mass * steelPricePerKg;
                 let finalPrice = basePrice;
-
+                
+                                // Учитываем количество штук в расчетах
+                const totalMass = mass * quantity;
+                const totalBasePrice = basePrice * quantity;
+                
                 // Доплаты по группам
                 switch(group) {
                     case 'I':
@@ -2238,7 +2258,7 @@ e-mail: info@izhsteel.ru
                         // Без доплаты
                         break;
                     case 'III':
-                        finalPrice += mass * 50; // +50 руб за кг
+                        finalPrice += totalMass * 50; // +50 руб за кг
                         break;
                     case 'IV':
                         finalPrice += finalPrice * 0.1; // +10% наценка
@@ -2257,6 +2277,9 @@ e-mail: info@izhsteel.ru
                 if (markup > 0) {
                     finalPrice += finalPrice * (markup / 100);
                 }
+                
+                // Итоговая стоимость с учетом количества
+                const totalFinalPrice = finalPrice * quantity;
 
                 // Показываем сообщение об успешном добавлении
                 resultDiv.innerHTML = '<div style="color: green; margin-top: 1em; font-weight: bold;">✓ Расчет добавлен в общую таблицу</div>';
@@ -2270,10 +2293,10 @@ e-mail: info@izhsteel.ru
                     group: group,
                     uzk: uzk,
                     uzkGroup: uzkGroup,
-                    mass: mass.toFixed(2),
-                    quantity: 1,
-                    basePrice: basePrice.toFixed(2),
-                    finalPrice: finalPrice.toFixed(2)
+                    mass: totalMass.toFixed(2),
+                    quantity: quantity,
+                    basePrice: totalBasePrice.toFixed(2),
+                    finalPrice: totalFinalPrice.toFixed(2)
                 });
                 renderAllResults();
             });
@@ -2299,11 +2322,14 @@ e-mail: info@izhsteel.ru
                 const uzk = form.querySelector('input[name="uzk"]').checked;
                 const uzkGroup = form.querySelector('select[name="uzk-group"]')?.value || '2';
                 const mech = form.querySelector('input[name="mech"]').checked;
+                const quantityInput = form.querySelector('input[name="quantity"]');
+                const quantity = quantityInput ? parseInt(quantityInput.value) : 1;
                 
                 let errors = [];
                 if (isNaN(D) || D < 360 || D > 1200) errors.push('D вне диапазона 360–1200 мм');
                 if (isNaN(d) || d < 160 || d > 630) errors.push('d вне диапазона 160–630 мм');
                 if (isNaN(L) || L < 1 || L > 4000) errors.push('L вне диапазона 1–4000 мм');
+                if (isNaN(quantity) || quantity < 1) errors.push('Количество должно быть не менее 1');
                 if (errors.length) {
                     resultDiv.innerHTML = '<span style="color:#b00">' + errors.join('<br>') + '</span>';
                     return;
@@ -2323,6 +2349,10 @@ e-mail: info@izhsteel.ru
                 let basePrice = mass * steelPricePerKg;
                 let finalPrice = basePrice;
                 
+                // Учитываем количество штук в расчетах
+                const totalMass = mass * quantity;
+                const totalBasePrice = basePrice * quantity;
+                
                 // Доплаты по группам
                 switch(group) {
                     case 'I':
@@ -2330,7 +2360,7 @@ e-mail: info@izhsteel.ru
                         // Без доплаты
                         break;
                     case 'III':
-                        finalPrice += mass * 50; // +50 руб за кг
+                        finalPrice += totalMass * 50; // +50 руб за кг
                         break;
                     case 'IV':
                         finalPrice += finalPrice * 0.1; // +10% наценка
@@ -2349,6 +2379,9 @@ e-mail: info@izhsteel.ru
                 if (markup > 0) {
                     finalPrice += finalPrice * (markup / 100);
                 }
+                
+                // Итоговая стоимость с учетом количества
+                const totalFinalPrice = finalPrice * quantity;
                 
                 let result = `Чистовые размеры: D=${D} мм, d=${d} мм, L=${L} мм<br>`;
                 result += `Поставочные размеры: D=${D_supply} мм, d=${d_supply} мм, L=${L_supply} мм<br>`;
@@ -2373,10 +2406,10 @@ e-mail: info@izhsteel.ru
                     group: group,
                     uzk: uzk,
                     uzkGroup: uzkGroup,
-                    mass: mass.toFixed(2),
-                    quantity: 1,
-                    basePrice: basePrice.toFixed(2),
-                    finalPrice: finalPrice.toFixed(2)
+                    mass: totalMass.toFixed(2),
+                    quantity: quantity,
+                    basePrice: totalBasePrice.toFixed(2),
+                    finalPrice: totalFinalPrice.toFixed(2)
                 });
                 renderAllResults();
                 
@@ -2405,6 +2438,8 @@ e-mail: info@izhsteel.ru
                 const uzk = form.querySelector('input[name="uzk"]').checked;
                 const uzkGroup = form.querySelector('select[name="uzk-group"]')?.value || '2';
                 const mech = form.querySelector('input[name="mech"]').checked;
+                const quantityInput = form.querySelector('input[name="quantity"]');
+                const quantity = quantityInput ? parseInt(quantityInput.value) : 1;
                 
                 let errors = [];
                 
@@ -2416,6 +2451,7 @@ e-mail: info@izhsteel.ru
                 if (H < 0.2 * D) errors.push('H < 0.2 × D (нарушение допуска)');
                 if (H > 1.2 * D) errors.push('H > 1.2 × D (нарушение допуска)');
                 if (!(d === 0 || d <= 0.5 * D)) errors.push('d должен быть 0 или ≤ 0.5 × D');
+                if (isNaN(quantity) || quantity < 1) errors.push('Количество должно быть не менее 1');
                 
                 if (errors.length) {
                     resultDiv.innerHTML = '<span style="color:#b00">' + errors.join('<br>') + '</span>';
@@ -2436,6 +2472,10 @@ e-mail: info@izhsteel.ru
                 let basePrice = mass * steelPricePerKg;
                 let finalPrice = basePrice;
                 
+                // Учитываем количество штук в расчетах
+                const totalMass = mass * quantity;
+                const totalBasePrice = basePrice * quantity;
+                
                 // Доплаты по группам
                 switch(group) {
                     case 'I':
@@ -2443,7 +2483,7 @@ e-mail: info@izhsteel.ru
                         // Без доплаты
                         break;
                     case 'III':
-                        finalPrice += mass * 50; // +50 руб за кг
+                        finalPrice += totalMass * 50; // +50 руб за кг
                         break;
                     case 'IV':
                         finalPrice += finalPrice * 0.1; // +10% наценка
@@ -2462,6 +2502,9 @@ e-mail: info@izhsteel.ru
                 if (markup > 0) {
                     finalPrice += finalPrice * (markup / 100);
                 }
+                
+                // Итоговая стоимость с учетом количества
+                const totalFinalPrice = finalPrice * quantity;
                 
                 let result = `Чистовые размеры: D=${D} мм, d=${d} мм, H=${H} мм<br>`;
                 result += `Поставочные размеры: D=${D_supply} мм, d=${d_supply} мм, H=${H_supply} мм<br>`;
@@ -2486,10 +2529,10 @@ e-mail: info@izhsteel.ru
                     group: group,
                     uzk: uzk,
                     uzkGroup: uzkGroup,
-                    mass: mass.toFixed(2),
-                    quantity: 1,
-                    basePrice: basePrice.toFixed(2),
-                    finalPrice: finalPrice.toFixed(2)
+                    mass: totalMass.toFixed(2),
+                    quantity: quantity,
+                    basePrice: totalBasePrice.toFixed(2),
+                    finalPrice: totalFinalPrice.toFixed(2)
                 });
                 renderAllResults();
                 
@@ -2544,6 +2587,8 @@ e-mail: info@izhsteel.ru
                 const uzkGroup = form.querySelector('select[name="uzk-group"]')?.value || '2';
                 const mech = form.querySelector('input[name="mech"]').checked;
                 const stepCount = parseInt(stepCountSelect.value);
+                const quantityInput = form.querySelector('input[name="quantity"]');
+                const quantity = quantityInput ? parseInt(quantityInput.value) : 1;
                 
                 let totalMass = 0;
                 let errors = [];
@@ -2597,10 +2642,20 @@ e-mail: info@izhsteel.ru
                     return;
                 }
                 
+                if (isNaN(quantity) || quantity < 1) {
+                    errors.push('Количество должно быть не менее 1');
+                    resultDiv.innerHTML = '<span style="color:#b00">' + errors.join('<br>') + '</span>';
+                    return;
+                }
+                
                 // Расчет стоимости
                 let steelPricePerKg = 80; // Базовая цена стали за кг
                 let basePrice = totalMass * steelPricePerKg;
                 let finalPrice = basePrice;
+                
+                // Учитываем количество штук в расчетах
+                const totalMassWithQuantity = totalMass * quantity;
+                const totalBasePrice = basePrice * quantity;
                 
                 // Доплаты по группам
                 switch(group) {
@@ -2609,7 +2664,7 @@ e-mail: info@izhsteel.ru
                         // Без доплаты
                         break;
                     case 'III':
-                        finalPrice += totalMass * 50; // +50 руб за кг
+                        finalPrice += totalMassWithQuantity * 50; // +50 руб за кг
                         break;
                     case 'IV':
                         finalPrice += finalPrice * 0.1; // +10% наценка
@@ -2629,6 +2684,9 @@ e-mail: info@izhsteel.ru
                     finalPrice += finalPrice * (markup / 100);
                 }
                 
+                // Итоговая стоимость с учетом количества
+                const totalFinalPrice = finalPrice * quantity;
+                
                 // Добавить в общий массив и обновить общую таблицу
                 window.allResults.push({
                     type: `Поковка ступенчатого вала гр. ${group} ГОСТ 8479-70${uzk ? ` с УЗК гр. ${uzkGroup}` : ''}`,
@@ -2638,10 +2696,10 @@ e-mail: info@izhsteel.ru
                     group: group,
                     uzk: uzk,
                     uzkGroup: uzkGroup,
-                    mass: totalMass.toFixed(2),
-                    quantity: 1,
-                    basePrice: basePrice.toFixed(2),
-                    finalPrice: finalPrice.toFixed(2)
+                    mass: totalMassWithQuantity.toFixed(2),
+                    quantity: quantity,
+                    basePrice: totalBasePrice.toFixed(2),
+                    finalPrice: totalFinalPrice.toFixed(2)
                 });
                 renderAllResults();
                 
