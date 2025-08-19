@@ -5,3 +5,19 @@
 ЕИС — ОКПД2 24.51–24.53,Отливки стали/чугуна/цветных,,,,"https://zakupki.gov.ru/epz/order/extendedsearch/search.html?okpd2Ids=24.51,24.52,24.53&af=on&sortBy=UPDATE_DATE&recordsPerPage=_100",Тендеры (ЕИС)
 B2B‑Center — «поковк*»,Коммерческие закупки,,,,https://www.b2b-center.ru/market/?f_keyword=поковк&sort=_LastDate,Коммерч. закупки
 B2B‑Center — «отливк*»,Коммерческие закупки,,,,https://www.b2b-center.ru/market/?f_keyword=отливк&sort=_LastDate,Коммерч. закупки
+ЕИС — «судостроен*»,Госзакупки по судостроению,,,,https://zakupki.gov.ru/epz/order/extendedsearch/search.html?searchString=судостроен*&morphology=on&af=on&sortBy=UPDATE_DATE&recordsPerPage=_100,Тендеры (ЕИС)
+ЕИС — ОКПД2 30.11,Суда и плавучие средства (категория),,,,https://zakupki.gov.ru/epz/order/extendedsearch/search.html?okpd2Ids=30.11&af=on&sortBy=UPDATE_DATE&recordsPerPage=_100,Тендеры (ЕИС)
+ЕИС — «судовые детали»,Детали/узлы для судов,,,,https://zakupki.gov.ru/epz/order/extendedsearch/search.html?searchString=судовые%20детали&morphology=on&af=on&sortBy=UPDATE_DATE&recordsPerPage=_100,Тендеры (ЕИС)
+ЕИС — «раскатные кольца»,Закупки раскатных колец,,,,https://zakupki.gov.ru/epz/order/extendedsearch/search.html?searchString=раскатные%20кольца&morphology=on&af=on&sortBy=UPDATE_DATE&recordsPerPage=_100,Тендеры (ЕИС)
+ЕИС — «кольца поковк*»,Кольца как поковки,,,,https://zakupki.gov.ru/epz/order/extendedsearch/search.html?searchString=кольца%20поковк*&morphology=on&af=on&sortBy=UPDATE_DATE&recordsPerPage=_100,Тендеры (ЕИС)
+ЕИС — «стальной вал»,Валы стальные,,,,https://zakupki.gov.ru/epz/order/extendedsearch/search.html?searchString=стальной%20вал&morphology=on&af=on&sortBy=UPDATE_DATE&recordsPerPage=_100,Тендеры (ЕИС)
+B2B‑Center — «судовы*»,Коммерческие закупки по судовым деталям,,,,https://www.b2b-center.ru/market/?f_keyword=судовы&sort=_LastDate,Коммерч. закупки
+B2B‑Center — «раскатные кольца»,Коммерческие закупки колец,,,,https://www.b2b-center.ru/market/?f_keyword=раскатные%20кольца&sort=_LastDate,Коммерч. закупки
+B2B‑Center — «вал стальной»,Коммерческие закупки валов,,,,https://www.b2b-center.ru/market/?f_keyword=вал%20стальной&sort=_LastDate,Коммерч. закупки
+РТС‑тендер — «судовы*»,Коммерческие закупки,,,,https://www.rts-tender.ru/market/?q=судовы,Коммерч. закупки
+РТС‑тендер — «раскатные кольца»,Коммерческие закупки,,,,https://www.rts-tender.ru/market/?q=раскатные%20кольца,Коммерч. закупки
+РТС‑тендер — «вал стальной»,Коммерческие закупки,,,,https://www.rts-tender.ru/market/?q=вал%20стальной,Коммерч. закупки
+Сбербанк‑АСТ — «судовы*»,Коммерческие закупки,,,,https://www.sberbank-ast.ru/Trade/Search?searchString=судовы,Коммерч. закупки
+ТЭК‑Торг — «судовы*»,Коммерческие закупки,,,,https://www.tektorg.ru/search?search=судовы,Коммерч. закупки
+ЕТП ГПБ — «судовы*»,Коммерческие закупки,,,,https://etp.gpb.ru/procedures/search?query=судовы,Коммерч. закупки
+Фабрикант — «судовы*»,Коммерческие закупки,,,,https://www.fabrikant.ru/trades/?q=судовы,Коммерч. закупки
